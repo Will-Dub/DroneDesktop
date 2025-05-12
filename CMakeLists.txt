@@ -17,9 +17,11 @@ qt_add_qml_module(appDroneDesktop
     VERSION 1.0
     QML_FILES
         Main.qml
+        DrawerButton.qml
     RESOURCES
         menuicon.png
-        QML_FILES DrawerButton.qml
+        settings.png
+        link.png
 )
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.
