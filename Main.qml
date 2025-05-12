@@ -4,8 +4,8 @@ import QtQuick.Layouts
 
 ApplicationWindow {
     id: window
-    width: 640
-    height: 480
+    width: 1280
+    height: 960
     visible: true
     title: qsTr("Drone application")
 
@@ -17,6 +17,20 @@ ApplicationWindow {
         }
         ListElement {
             displayText: "Options"
+        }
+    }
+
+    Popup {
+        id: popup
+        anchors.centerIn: parent
+        width: 300
+        height: 300
+        modal: true
+        focus: true
+        closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutside
+
+        Label {
+            text: "test"
         }
     }
 
@@ -70,6 +84,10 @@ ApplicationWindow {
 
                 ToolTip.visible: hovered
                 ToolTip.text: "Connect"
+
+                onClicked: {
+                    popup.open()
+                }
             }
         }
     }
@@ -100,20 +118,18 @@ ApplicationWindow {
                     width: parent.width
                     height: 48
 
-                    RowLayout {
-                        anchors.fill: parent
-                        anchors.leftMargin: 16
-                        anchors.rightMargin: 16
-                        spacing: 12
-
-                        Label {
-                            text: model.displayText
-                            font.pixelSize: 14
-                            Layout.fillWidth: true
-                            elide: Text.ElideRight
-                            color: drawerListView.currentIndex === index ? "#2196F3" : "#424242"
-                            font.weight: drawerListView.currentIndex === index ? Font.Medium : Font.Normal
+                    Label {
+                        anchors{
+                            left: parent.left
+                            leftMargin: 16
+                            verticalCenter: parent.verticalCenter
                         }
+
+                        text: model.displayText
+                        font.pixelSize: 14
+                        elide: Text.ElideRight
+                        color: drawerListView.currentIndex === index ? "#2196F3" : "#424242"
+                        font.weight: drawerListView.currentIndex === index ? Font.Medium : Font.Normal
                     }
 
                     background: Rectangle {
