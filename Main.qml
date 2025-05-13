@@ -23,14 +23,22 @@ ApplicationWindow {
     Popup {
         id: popup
         anchors.centerIn: parent
-        width: 300
-        height: 300
+        width: window.width / 2
+        height: window.height / 2
         modal: true
         focus: true
         closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutside
 
         Label {
-            text: "test"
+            text: "Connect"
+            font.pixelSize: 30
+            font.bold: true
+            font.weight: Font.Medium
+            anchors{
+                horizontalCenter: parent.horizontalCenter
+                top: parent.top
+                topMargin: 30
+            }
         }
     }
 
@@ -167,13 +175,121 @@ ApplicationWindow {
 
     Component {
         id: dashboardPage
-        Rectangle {
-            color: "white"
 
-            Label {
-                anchors.centerIn: parent
-                text: "Dashboard"
-                font.pixelSize: 24
+        RowLayout{
+            anchors.fill: parent
+
+            ColumnLayout{
+                Layout.fillHeight: true
+                Layout.fillWidth: true
+                spacing: 0
+
+                Loader {
+                    Layout.preferredHeight: parent.height * 0.8
+                    Layout.fillHeight: true
+                    Layout.fillWidth: true
+
+                    sourceComponent: gpsView
+                }
+
+                Loader {
+                    Layout.preferredHeight: parent.height * 0.2
+                    Layout.fillHeight: true
+                    Layout.fillWidth: true
+
+                    sourceComponent: realTimeDataView
+                }
+            }
+        }
+    }
+
+    Component {
+        id: gpsView
+
+        Pane{
+            anchors.fill: parent
+
+            background: Rectangle {
+                color: "#1e1e1e"
+                border.color: "#3a3a3a"
+                border.width: 1
+            }
+
+            Rectangle {
+                anchors.fill: parent
+                anchors.margins: 3
+                radius: 7
+                color: "#e0e0e0"
+            }
+        }
+    }
+
+    Component {
+        id: realTimeDataView
+
+        Pane{
+            anchors.fill: parent
+
+            background: Rectangle {
+                color: "#292827"
+                border.color: "#3a3a3a"
+                border.width: 1
+            }
+
+            RowLayout{
+                anchors.fill: parent
+                Loader {
+                    sourceComponent: dataView
+                    Layout.fillHeight: true
+                    Layout.fillWidth: true
+                }
+                Loader {
+                    sourceComponent: dataView
+                    Layout.fillHeight: true
+                    Layout.fillWidth: true
+                }
+                Loader {
+                    sourceComponent: dataView
+                    Layout.fillHeight: true
+                    Layout.fillWidth: true
+                }
+            }
+        }
+    }
+
+    Component {
+        id: dataView
+
+        Pane{
+            anchors.fill: parent
+
+            background: Rectangle {
+                color: "#333232"
+                radius: 8
+            }
+
+            Label{
+                id: dataViewTitle
+                text: "Altitude"
+                font.pixelSize: 20
+                font.bold: true
+                color: "#bdbbb7"
+
+                anchors{
+                    horizontalCenter: parent.horizontalCenter
+                }
+            }
+
+            Label{
+                text: "78 m"
+                font.pixelSize: 20
+                font.bold: true
+                color: "white"
+
+                anchors{
+                    horizontalCenter: parent.horizontalCenter
+                    top: dataViewTitle.bottom
+                }
             }
         }
     }
