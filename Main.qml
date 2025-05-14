@@ -69,34 +69,6 @@ ApplicationWindow {
                 ToolTip.visible: hovered
                 ToolTip.text: "Settings"
             }
-
-            ToolButton {
-                id: connectButton
-                icon.source: "link.png"
-                icon.width: 24
-                icon.height: 24
-
-                background: Rectangle {
-                    color: connectButton.pressed ? "#3b8e3c" : (connectButton.hovered ? "#5dc961" : "#4CAF50")
-                    radius: 4
-                    border.width: connectButton.visualFocus ? 2 : 1
-                    border.color: connectButton.visualFocus ? "#0078d7" : (connectButton.hovered ? "#75d679" : "transparent")
-
-                    Behavior on color {
-                        ColorAnimation { duration: 150 }
-                    }
-                    Behavior on border.color {
-                        ColorAnimation { duration: 150 }
-                    }
-                }
-
-                ToolTip.visible: hovered
-                ToolTip.text: "Connect"
-
-                onClicked: {
-                    popup.open()
-                }
-            }
         }
     }
 
@@ -115,7 +87,62 @@ ApplicationWindow {
                 border.width: 1
             }
 
-            ListView {
+            ColumnLayout{
+                anchors.top: parent.top
+                anchors.left: parent.left
+                anchors.right: parent.right
+                spacing: 20
+
+                Button{
+                    Layout.fillWidth: true
+                    Layout.margins: 10
+                    Layout.preferredHeight: 50
+
+                    text: "Connect"
+                    font.bold: true
+                    font.pixelSize: 24
+
+                    background: Rectangle {
+                        color: parent.pressed ? "#1972c2" : (parent.hovered ? "#0276de" : "#0086ff")
+                        radius: 4
+                        border.width: parent.visualFocus ? 2 : 1
+                        border.color: parent.visualFocus ? "#074175" : (parent.hovered ? "#0968bd" : "transparent")
+
+                        Behavior on color {
+                            ColorAnimation { duration: 150 }
+                        }
+                        Behavior on border.color {
+                            ColorAnimation { duration: 150 }
+                        }
+                    }
+
+                    Image{
+                        source: "link.png"
+                        width: 24
+                        height: 24
+
+                        anchors{
+                            verticalCenter: parent.verticalCenter
+                            left: parent.left
+                            leftMargin: 15
+                        }
+                    }
+
+                    onClicked: {
+                        popup.open()
+                    }
+                }
+
+                Label {
+                    Layout.leftMargin: 20
+
+                    text: "Dashboard"
+
+                    font.pixelSize: 18
+                    color: "#7b7c7b"
+                }
+            }
+            /*ListView {
                 id: drawerListView
                 anchors.fill: parent
                 currentIndex: 0
@@ -155,7 +182,7 @@ ApplicationWindow {
                         drawerListView.currentIndex = index
                     }
                 }
-            }
+            }*/
         }
 
         // Main
@@ -238,57 +265,26 @@ ApplicationWindow {
 
             RowLayout{
                 anchors.fill: parent
-                Loader {
-                    sourceComponent: dataView
+                SingleDataView {
                     Layout.fillHeight: true
                     Layout.fillWidth: true
+
+                    title: "Altitude"
+                    value: "54321"
                 }
-                Loader {
-                    sourceComponent: dataView
+                SingleDataView {
                     Layout.fillHeight: true
                     Layout.fillWidth: true
+
+                    title: "Battery"
+                    value: "100%"
                 }
-                Loader {
-                    sourceComponent: dataView
+                SingleDataView {
                     Layout.fillHeight: true
                     Layout.fillWidth: true
-                }
-            }
-        }
-    }
 
-    Component {
-        id: dataView
-
-        Pane{
-            anchors.fill: parent
-
-            background: Rectangle {
-                color: "#333232"
-                radius: 8
-            }
-
-            Label{
-                id: dataViewTitle
-                text: "Altitude"
-                font.pixelSize: 20
-                font.bold: true
-                color: "#bdbbb7"
-
-                anchors{
-                    horizontalCenter: parent.horizontalCenter
-                }
-            }
-
-            Label{
-                text: "78 m"
-                font.pixelSize: 20
-                font.bold: true
-                color: "white"
-
-                anchors{
-                    horizontalCenter: parent.horizontalCenter
-                    top: dataViewTitle.bottom
+                    title: "Latitude"
+                    value: "12345"
                 }
             }
         }
