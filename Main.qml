@@ -78,12 +78,14 @@ ApplicationWindow {
 
         // Sidebar
         Pane{
+            id: sidebar
+            Layout.minimumWidth: 50
             Layout.preferredWidth: 0.2 * window.width
             Layout.fillHeight: true
             padding: 0
             background: Rectangle {
-                color: "#f5f5f5"
-                border.color: "#e0e0e0"
+                color: "#252525"
+                border.color: "#3a3a3a"
                 border.width: 1
             }
 
@@ -133,15 +135,25 @@ ApplicationWindow {
                     }
                 }
 
-                Label {
-                    Layout.leftMargin: 20
-
+                SidebarSection{
                     text: "Dashboard"
+                }
 
-                    font.pixelSize: 18
-                    color: "#7b7c7b"
+                // Dashboard section
+                ColumnLayout{
+                    spacing: 0
+                    SidebarCheckbox{
+                        labelText: "GPS"
+                        mouseArea.onClicked: gpsView.visible = !gpsView.visible
+                    }
+
+                    SidebarCheckbox{
+                        labelText: "Stats"
+                        mouseArea.onClicked: realTimeDataView.visible = !realTimeDataView.visible
+                    }
                 }
             }
+
             /*ListView {
                 id: drawerListView
                 anchors.fill: parent
@@ -211,80 +223,18 @@ ApplicationWindow {
                 Layout.fillWidth: true
                 spacing: 0
 
-                Loader {
+                DashboardGpsView {
+                    id: gpsView
                     Layout.preferredHeight: parent.height * 0.8
                     Layout.fillHeight: true
                     Layout.fillWidth: true
-
-                    sourceComponent: gpsView
                 }
 
-                Loader {
+                DashboardRealTimeDataView {
+                    id: realTimeDataView
                     Layout.preferredHeight: parent.height * 0.2
                     Layout.fillHeight: true
                     Layout.fillWidth: true
-
-                    sourceComponent: realTimeDataView
-                }
-            }
-        }
-    }
-
-    Component {
-        id: gpsView
-
-        Pane{
-            anchors.fill: parent
-
-            background: Rectangle {
-                color: "#1e1e1e"
-                border.color: "#3a3a3a"
-                border.width: 1
-            }
-
-            Rectangle {
-                anchors.fill: parent
-                anchors.margins: 3
-                radius: 7
-                color: "#e0e0e0"
-            }
-        }
-    }
-
-    Component {
-        id: realTimeDataView
-
-        Pane{
-            anchors.fill: parent
-
-            background: Rectangle {
-                color: "#292827"
-                border.color: "#3a3a3a"
-                border.width: 1
-            }
-
-            RowLayout{
-                anchors.fill: parent
-                SingleDataView {
-                    Layout.fillHeight: true
-                    Layout.fillWidth: true
-
-                    title: "Altitude"
-                    value: "54321"
-                }
-                SingleDataView {
-                    Layout.fillHeight: true
-                    Layout.fillWidth: true
-
-                    title: "Battery"
-                    value: "100%"
-                }
-                SingleDataView {
-                    Layout.fillHeight: true
-                    Layout.fillWidth: true
-
-                    title: "Latitude"
-                    value: "12345"
                 }
             }
         }
