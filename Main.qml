@@ -144,12 +144,48 @@ ApplicationWindow {
                     spacing: 0
                     SidebarCheckbox{
                         labelText: "GPS"
-                        mouseArea.onClicked: gpsView.visible = !gpsView.visible
+                        mouseArea.onClicked: stackView.currentItem.isGpsViewVisible = !stackView.currentItem.isGpsViewVisible
+                        isOn: true
                     }
 
                     SidebarCheckbox{
                         labelText: "Stats"
-                        mouseArea.onClicked: realTimeDataView.visible = !realTimeDataView.visible
+                        mouseArea.onClicked: stackView.currentItem.isRealTimeDataViewVisible = !stackView.currentItem.isRealTimeDataViewVisible
+                        isOn: true
+                    }
+
+                    SidebarCheckbox{
+                        labelText: "Video"
+                        mouseArea.onClicked: stackView.currentItem.isVideoViewVisible = !stackView.currentItem.isVideoViewVisible
+                        isOn: true
+                    }
+                }
+
+                SidebarSection{
+                    text: "Controls"
+                }
+
+                // Control section
+                ColumnLayout{
+                    spacing: 0
+                    SidebarCheckbox{
+                        labelText: "Calibration"
+                        mouseArea.onClicked: stackView.currentItem.isCalibrationViewVisible = !stackView.currentItem.isCalibrationViewVisible
+                        isOn: true
+                    }
+                }
+
+                SidebarSection{
+                    text: "Tools"
+                }
+
+                // Control section
+                ColumnLayout{
+                    spacing: 0
+                    SidebarCheckbox{
+                        labelText: "Drone settings"
+                        mouseArea.onClicked: stackView.currentItem.isDroneSettingsViewVisible = !stackView.currentItem.isDroneSettingsViewVisible
+                        isOn: true
                     }
                 }
             }
@@ -216,18 +252,33 @@ ApplicationWindow {
         id: dashboardPage
 
         RowLayout{
+            property alias gpsView: gpsView
+            property alias realTimeDataView: realTimeDataView
+            property alias videoView: videoView
+            property alias calibrationViewVisible: calibrationViewVisible
+            property alias droneSettingsViewVisible: droneSettingsViewVisible
+            property bool isGpsViewVisible: true
+            property bool isRealTimeDataViewVisible: true
+            property bool isVideoViewVisible: true
+            property bool isCalibrationViewVisible: true
+            property bool isDroneSettingsViewVisible: true
+
+            spacing: 0
+
             anchors.fill: parent
 
             ColumnLayout{
                 Layout.fillHeight: true
                 Layout.fillWidth: true
                 spacing: 0
+                visible: isGpsViewVisible || isRealTimeDataViewVisible
 
                 DashboardGpsView {
                     id: gpsView
                     Layout.preferredHeight: parent.height * 0.8
                     Layout.fillHeight: true
                     Layout.fillWidth: true
+                    visible: isGpsViewVisible
                 }
 
                 DashboardRealTimeDataView {
@@ -235,6 +286,36 @@ ApplicationWindow {
                     Layout.preferredHeight: parent.height * 0.2
                     Layout.fillHeight: true
                     Layout.fillWidth: true
+                    visible: isRealTimeDataViewVisible
+                }
+            }
+
+            ColumnLayout{
+                Layout.fillHeight: true
+                Layout.fillWidth: true
+                spacing: 0
+                visible: isVideoViewVisible || isCalibrationViewVisible || isDroneSettingsViewVisible
+
+                DashboardVideoView {
+                    id: videoView
+                    Layout.preferredHeight: parent.height * 0.8
+                    Layout.fillHeight: true
+                    Layout.fillWidth: true
+                    visible: isVideoViewVisible
+                }
+                DashboardVideoView {
+                    id: calibrationViewVisible
+                    Layout.preferredHeight: parent.height * 0.8
+                    Layout.fillHeight: true
+                    Layout.fillWidth: true
+                    visible: isCalibrationViewVisible
+                }
+                DashboardVideoView {
+                    id: droneSettingsViewVisible
+                    Layout.preferredHeight: parent.height * 0.8
+                    Layout.fillHeight: true
+                    Layout.fillWidth: true
+                    visible: isDroneSettingsViewVisible
                 }
             }
         }

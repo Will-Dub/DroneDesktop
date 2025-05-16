@@ -27,6 +27,7 @@ qt_add_qml_module(appDroneDesktop
         QML_FILES SidebarCheckbox.qml
         QML_FILES DashboardGpsView.qml
         QML_FILES DashboardRealTimeDataView.qml
+        QML_FILES DashboardVideoView.qml
 )
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.
