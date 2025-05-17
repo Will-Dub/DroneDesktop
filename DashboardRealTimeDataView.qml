@@ -9,7 +9,7 @@ Item {
         anchors.fill: parent
 
         background: Rectangle {
-            color: "#292827"
+            color: "#1e1e1e"
             border.color: "#3a3a3a"
             border.width: 1
         }

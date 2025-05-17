@@ -143,7 +143,7 @@ ApplicationWindow {
                 ColumnLayout{
                     spacing: 0
                     SidebarCheckbox{
-                        labelText: "GPS"
+                        labelText: "Gps"
                         mouseArea.onClicked: stackView.currentItem.isGpsViewVisible = !stackView.currentItem.isGpsViewVisible
                         isOn: true
                     }
@@ -189,48 +189,6 @@ ApplicationWindow {
                     }
                 }
             }
-
-            /*ListView {
-                id: drawerListView
-                anchors.fill: parent
-                currentIndex: 0
-                model: navigationModel
-                clip: true
-
-                delegate: ItemDelegate {
-                    width: parent.width
-                    height: 48
-
-                    Label {
-                        anchors{
-                            left: parent.left
-                            leftMargin: 16
-                            verticalCenter: parent.verticalCenter
-                        }
-
-                        text: model.displayText
-                        font.pixelSize: 14
-                        elide: Text.ElideRight
-                        color: drawerListView.currentIndex === index ? "#2196F3" : "#424242"
-                        font.weight: drawerListView.currentIndex === index ? Font.Medium : Font.Normal
-                    }
-
-                    background: Rectangle {
-                        color: drawerListView.currentIndex === index ? "#e3f2fd" : "transparent"
-
-                        Rectangle {
-                            width: 4
-                            height: parent.height
-                            anchors.left: parent.left
-                            color: drawerListView.currentIndex === index ? "#2196F3" : "transparent"
-                        }
-                    }
-
-                    onClicked: {
-                        drawerListView.currentIndex = index
-                    }
-                }
-            }*/
         }
 
         // Main
@@ -240,6 +198,12 @@ ApplicationWindow {
             spacing: 0
 
             StackView {
+                background: Rectangle {
+                    color: "#1e1e1e"
+                    border.color: "#3a3a3a"
+                    border.width: 1
+                }
+
                 id: stackView
                 Layout.fillWidth: true
                 Layout.fillHeight: true
