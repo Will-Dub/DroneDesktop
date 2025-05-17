@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Controls.Fusion
 import QtQuick.Layouts
+import DroneDesktop 1.0
 
 ApplicationWindow {
     id: window
@@ -38,6 +39,30 @@ ApplicationWindow {
                 horizontalCenter: parent.horizontalCenter
                 top: parent.top
                 topMargin: 30
+            }
+        }
+
+        Item {
+            width: 640
+            height: 480
+
+            Component.onCompleted: {
+                DroneBackend.initialize();
+            }
+
+            Button {
+                text: "Send Request"
+                onClicked: {
+                    const response = DroneBackend.processRequest("Hello from QML");
+                    console.log("Got response:", response);
+                }
+            }
+
+            Connections {
+                target: DroneBackend
+                function onDataChanged(newData) {
+                    console.log("Data changed:", newData);
+                }
             }
         }
     }
