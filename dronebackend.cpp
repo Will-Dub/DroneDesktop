@@ -1,28 +1,45 @@
 #include "dronebackend.h"
 
-DroneBackend* DroneBackend::m_instance = nullptr;
-
-DroneBackend* DroneBackend::instance() {
-    if (!m_instance) {
-        m_instance = new DroneBackend();
-    }
-    return m_instance;
-}
-
 DroneBackend::DroneBackend(QObject *parent) : QObject(parent) {
-    // Initialize your backend
+    m_worker = new DroneWorker();
+
+    m_workerThread = new QThread(this);
+    m_worker->moveToThread(m_workerThread);
+
+    // Start and finish
+    connect(m_workerThread, &QThread::finished, m_worker, &QObject::deleteLater);
+
+    connect(m_workerThread, &QThread::started, m_worker, [this]() {
+        qDebug() << "Worker thread started";
+    });
+
+    // Connect buisness logic
+    connect(this, &DroneBackend::initialize,
+            m_worker, &DroneWorker::connectToDrone);
+
+    connect(m_worker, &DroneWorker::connectionFailed,
+            this, &DroneBackend::processRequest);
+
+    // Start the thread
+    m_workerThread->start();
 }
 
-bool DroneBackend::initialize() {
-    // Implementation
-    return true;
+DroneBackend::~DroneBackend(){
+    if (m_worker && m_workerThread) {
+        m_worker->stopWorking();
+
+        // tell to quit and wait
+        m_workerThread->quit();
+
+        if (!m_workerThread->wait(3000)) {
+            qWarning() << "Worker thread failed to terminate, forcing termination";
+            m_workerThread->terminate();
+            m_workerThread->wait();
+        }
+    }
 }
 
 QString DroneBackend::processRequest(const QString &data) {
-    // Process the request from QML
-    // ...
-
-    // Emit signals as needed
     emit dataChanged("Response to: " + data);
 
     return "Request processed";

@@ -2,6 +2,7 @@
 #include <QQmlApplicationEngine>
 #include <QPixmap>
 #include <QIcon>
+#include <QQmlContext>
 #include "dronebackend.h"
 
 int main(int argc, char *argv[])
@@ -11,8 +12,9 @@ int main(int argc, char *argv[])
 
     QQmlApplicationEngine engine;
 
-    qmlRegisterSingletonInstance<DroneBackend>("DroneDesktop", 1, 0, "DroneBackend",
-                                                 DroneBackend::instance());
+    DroneBackend* droneBackend = new DroneBackend(&app);
+
+    engine.rootContext()->setContextProperty("drone", droneBackend);
 
     QObject::connect(
         &engine,
