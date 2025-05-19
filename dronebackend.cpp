@@ -1,24 +1,28 @@
 #include "dronebackend.h"
 
-DroneBackend::DroneBackend(QObject *parent) : QObject(parent) {
+DroneBackend::DroneBackend(QObject *parent) : QObject(parent), m_is_connected(false), m_status("Disconnected") {
     m_worker = new DroneWorker();
 
     m_workerThread = new QThread(this);
     m_worker->moveToThread(m_workerThread);
 
-    // Start and finish
+    // Connect start and finish
     connect(m_workerThread, &QThread::finished, m_worker, &QObject::deleteLater);
 
     connect(m_workerThread, &QThread::started, m_worker, [this]() {
         qDebug() << "Worker thread started";
     });
 
-    // Connect buisness logic
-    connect(this, &DroneBackend::initialize,
+    // Connect backend to worker
+    connect(this, &DroneBackend::doConnect,
             m_worker, &DroneWorker::connectToDrone);
 
-    connect(m_worker, &DroneWorker::connectionFailed,
-            this, &DroneBackend::processRequest);
+    connect(this, &DroneBackend::doDisconnect,
+            m_worker, &DroneWorker::disconnectDrone);
+
+    // Connect worker to backend
+    connect(m_worker, &DroneWorker::connectionStatusChanged,
+            this, &DroneBackend::onConnectionStatusChanged);
 
     // Start the thread
     m_workerThread->start();
@@ -39,8 +43,49 @@ DroneBackend::~DroneBackend(){
     }
 }
 
-QString DroneBackend::processRequest(const QString &data) {
-    emit dataChanged("Response to: " + data);
+bool DroneBackend::isConnected() const
+{
+    return m_is_connected;
+}
 
-    return "Request processed";
+void DroneBackend::setIsConnected(bool is_connected)
+{
+    if (m_is_connected != is_connected) {
+        m_is_connected = is_connected;
+        emit connectedChanged();
+    }
+}
+
+QString DroneBackend::status() const
+{
+    return m_status;
+}
+
+bool DroneBackend::connectToDrone()
+{
+    if (!m_is_connected) {
+        emit doConnect();
+        return true;
+    }
+    return false;
+}
+
+void DroneBackend::disconnectDrone()
+{
+    if(m_is_connected){
+        emit doDisconnect();
+    }
+}
+
+void DroneBackend::onConnectionStatusChanged(bool is_connected)
+{
+    setIsConnected(is_connected);
+}
+
+void DroneBackend::onStatusUpdate(const QString &newStatus)
+{
+    if (m_status != newStatus) {
+        m_status = newStatus;
+        emit statusChanged();
+    }
 }

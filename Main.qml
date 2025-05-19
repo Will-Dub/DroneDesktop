@@ -45,22 +45,30 @@ ApplicationWindow {
             width: 640
             height: 480
 
-            Component.onCompleted: {
-                drone.initialize();
+            Button {
+                id: connectBtn
+                text: "Send connect"
+                onClicked: {
+                    const response = drone.connectToDrone();
+                    console.log("Got response:", response);
+                }
             }
 
             Button {
-                text: "Send Request"
+                text: "Send disconnect"
+
+                anchors.left: connectBtn.right
+
                 onClicked: {
-                    const response = drone.processRequest("Hello from QML");
+                    const response = drone.disconnectDrone();
                     console.log("Got response:", response);
                 }
             }
 
             Connections {
                 target: drone
-                function onDataChanged(newData) {
-                    console.log("Data changed:", newData);
+                function onConnectedChanged() {
+                    console.log("Connection status changed:", drone.connected);
                 }
             }
         }

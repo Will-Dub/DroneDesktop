@@ -16,12 +16,14 @@ public:
 
 public slots:
     void connectToDrone();
+    void disconnectDrone();
 
 signals:
-    void connectionEstablished();
-    void connectionFailed(const QString& reason);
+    void connectionStatusChanged(bool connected);
+    void statusUpdated(const QString &status);
 
 private:
+    bool m_connected;
 };
 
 #endif // DRONEWORKER_H
