@@ -31,7 +31,7 @@ signals:
     void statusChanged();
 
     // Signals to worker
-    void doConnect();
+    void doConnect(const QString& portName);
     void doDisconnect();
 
 public slots:
