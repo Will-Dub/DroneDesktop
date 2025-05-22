@@ -24,6 +24,7 @@ public:
     // Methods for QML
     Q_INVOKABLE bool connectToDrone();
     Q_INVOKABLE void disconnectDrone();
+    Q_INVOKABLE void sendDataTest();
 
 signals:
     // Signals for property change
@@ -33,11 +34,13 @@ signals:
     // Signals to worker
     void doConnect(const QString& portName);
     void doDisconnect();
+    void doWriteData(const DataPacket &dataPacket);
 
 public slots:
     // Slots received from worker
-    void onConnectionStatusChanged(bool is_connected);
+    void onConnectionStatusChanged(const bool is_connected);
     void onStatusUpdate(const QString &newStatus);
+    void onNewPacketReceived(const DataPacket &dataPacket);
 
 private:
     QThread* m_workerThread;

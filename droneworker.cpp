@@ -3,19 +3,22 @@
 DroneWorker::DroneWorker(QObject *parent)
     : QObject{parent}
 {
-    qDebug() << "DroneWorker constructed in thread:" << QThread::currentThreadId();
+    qDebug() << "DroneWorker: Constructed in thread " << QThread::currentThreadId();
 }
 
 DroneWorker::~DroneWorker()
 {
+    disconnectDrone();
     stopWorking();
 
-    qDebug() << "DroneWorker destroyed in thread:" << QThread::currentThreadId();
+    delete m_serialPort;
+
+    qDebug() << "DroneWorker: Destroyed in thread " << QThread::currentThreadId();
 }
 
 void DroneWorker::stopWorking()
 {
-    qDebug() << "DroneWorker stopped in thread:" << QThread::currentThreadId();
+    qDebug() << "DroneWorker: Stopped in thread " << QThread::currentThreadId();
 }
 
 void DroneWorker::processReadBuffer()
@@ -29,64 +32,76 @@ void DroneWorker::processReadBuffer()
 
 void DroneWorker::connectToDrone(const QString &portName)
 {
-    qDebug() << "Connect to drone called with port " << portName;
+    qDebug() << "DroneWorker: Connect to drone called with port " << portName;
 
-    m_serialPort.setPortName(portName);
-    m_serialPort.setBaudRate(QSerialPort::Baud9600);
-    m_serialPort.setDataBits(QSerialPort::Data8);
-    m_serialPort.setParity(QSerialPort::NoParity);
-    m_serialPort.setStopBits(QSerialPort::OneStop);
-    m_serialPort.setFlowControl(QSerialPort::NoFlowControl);
+    if(m_serialPort == nullptr){
+        m_serialPort = new QSerialPort(this);
+    }
 
-    if (!m_serialPort.open(QIODevice::ReadWrite)) {
-        qDebug() << "Failed to open port: " << m_serialPort.errorString();
+    m_serialPort->setPortName(portName);
+    m_serialPort->setBaudRate(QSerialPort::Baud9600);
+    m_serialPort->setDataBits(QSerialPort::Data8);
+    m_serialPort->setParity(QSerialPort::NoParity);
+    m_serialPort->setStopBits(QSerialPort::OneStop);
+    m_serialPort->setFlowControl(QSerialPort::NoFlowControl);
+
+    if (!m_serialPort->open(QIODevice::ReadWrite)) {
+        qDebug() << "DroneWorker: Failed to open port: " << m_serialPort->errorString();
         emit connectionStatusChanged(false);
     }
 
-    qDebug() << "Serial port opened";
+    qDebug() << "DroneWorker: Serial port opened";
 
     // Call readData function when there is new data
-    connect(&m_serialPort, &QSerialPort::readyRead, this, &DroneWorker::readData);
+    connect(m_serialPort, &QSerialPort::readyRead, this, &DroneWorker::handleReadData);
+    connect(m_serialPort, &QSerialPort::errorOccurred, this, &DroneWorker::handleError);
 
     emit connectionStatusChanged(true);
 }
 
 void DroneWorker::disconnectDrone()
 {
-    m_serialPort.close();
+    m_serialPort->close();
+    disconnect(m_serialPort, &QSerialPort::readyRead, this, &DroneWorker::handleReadData);
+    disconnect(m_serialPort, &QSerialPort::errorOccurred, this, &DroneWorker::handleError);
     emit connectionStatusChanged(false);
 }
 
-void DroneWorker::readData()
+void DroneWorker::handleReadData()
 {
-    qDebug() << m_serialPort.bytesAvailable() << " bytes available";
-    QByteArray received = m_serialPort.readAll();
+    qDebug() << "DroneWorker: " << m_serialPort->bytesAvailable() << " bytes available";
+    QByteArray received = m_serialPort->readAll();
 
-    auto error = m_serialPort.error();
-    if(m_serialPort.error() != QSerialPort::NoError){
-        qDebug() << "Error while reading the data " << error;
-        disconnectDrone();
-        return;
-    }
-
-    qDebug() << "Received from usb: " << received;
+    qDebug() << "DroneWorker: Received from usb: " << received;
     m_recvBuffer.append(received);
     processReadBuffer();
 }
 
+void DroneWorker::handleError(QSerialPort::SerialPortError error) {
+    qWarning() << "DroneWorker: Serial port error " << error;
+    disconnectDrone();
+    emit connectionStatusChanged(false);
+}
+
 void DroneWorker::writeData(const DataPacket &dataPacket)
 {
-    if(!m_serialPort.isOpen()){
+    if(!m_serialPort->isOpen()){
+        qWarning() << "DroneWorker: Trying to write while the serial is not openned";
         return;
     }
 
-    m_serialPort.write(dataPacket.serialize());
-    m_serialPort.flush();
+    QByteArray data = dataPacket.serialize();
+    qint64 bytesWritten = m_serialPort->write(data);
 
-    auto error = m_serialPort.error();
-    if(m_serialPort.error() != QSerialPort::NoError){
-        qDebug() << "Error while writing the data " << error;
-        disconnectDrone();
+    if (bytesWritten == -1) {
+        qWarning() << "DroneWorker: Failed to write data:" << m_serialPort->errorString();
         return;
     }
+
+    if (bytesWritten != data.size()) {
+        qWarning() << "DroneWorker: Partial write " << data.size()<< "/" << bytesWritten;
+    }
+
+    m_serialPort->flush();
+
 }

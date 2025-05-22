@@ -23,16 +23,19 @@ private:
 public slots:
     void connectToDrone(const QString &portName);
     void disconnectDrone();
-    void readData();
     void writeData(const DataPacket& dataPacket);
+
+private slots:
+    void handleReadData();
+    void handleError(QSerialPort::SerialPortError error);
 
 signals:
     void newPacketReceived(const DataPacket &packet);
-    void connectionStatusChanged(bool connected);
+    void connectionStatusChanged(const bool connected);
     void statusUpdated(const QString &status);
 
 private:
-    QSerialPort m_serialPort;
+    QSerialPort* m_serialPort{nullptr};
     QByteArray m_recvBuffer;
 };
 

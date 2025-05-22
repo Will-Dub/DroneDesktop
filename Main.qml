@@ -55,13 +55,23 @@ ApplicationWindow {
             }
 
             Button {
+                id: disconnectBtn
                 text: "Send disconnect"
 
                 anchors.left: connectBtn.right
 
                 onClicked: {
                     const response = drone.disconnectDrone();
-                    console.log("Got response:", response);
+                }
+            }
+
+            Button {
+                text: "Send packet"
+
+                anchors.left: disconnectBtn.right
+
+                onClicked: {
+                    const response = drone.sendDataTest();
                 }
             }
 

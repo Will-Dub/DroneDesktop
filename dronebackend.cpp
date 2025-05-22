@@ -20,9 +20,15 @@ DroneBackend::DroneBackend(QObject *parent) : QObject(parent), m_is_connected(fa
     connect(this, &DroneBackend::doDisconnect,
             m_worker, &DroneWorker::disconnectDrone);
 
+    connect(this, &DroneBackend::doWriteData,
+            m_worker, &DroneWorker::writeData);
+
     // Connect worker to backend
     connect(m_worker, &DroneWorker::connectionStatusChanged,
             this, &DroneBackend::onConnectionStatusChanged);
+
+    connect(m_worker, &DroneWorker::newPacketReceived,
+            this, &DroneBackend::onNewPacketReceived);
 
     // Start the thread
     m_workerThread->start();
@@ -36,7 +42,7 @@ DroneBackend::~DroneBackend(){
         m_workerThread->quit();
 
         if (!m_workerThread->wait(3000)) {
-            qWarning() << "Worker thread failed to terminate, forcing termination";
+            qWarning() << "DroneBackend: Worker thread failed to terminate, forcing termination";
             m_workerThread->terminate();
             m_workerThread->wait();
         }
@@ -64,7 +70,7 @@ QString DroneBackend::status() const
 bool DroneBackend::connectToDrone()
 {
     if (!m_is_connected) {
-        emit doConnect();
+        emit doConnect("COM3");
         return true;
     }
     return false;
@@ -77,8 +83,20 @@ void DroneBackend::disconnectDrone()
     }
 }
 
-void DroneBackend::onConnectionStatusChanged(bool is_connected)
+void DroneBackend::sendDataTest()
 {
+    if(!m_is_connected){
+        qDebug() << "DroneBackend: Send data got called but the connection is closed";
+        return;
+    }
+
+    DataPacket test{1,1,DataPacketType::START,{}};
+    emit doWriteData(test);
+}
+
+void DroneBackend::onConnectionStatusChanged(const bool is_connected)
+{
+    qDebug() << "DroneBackend: Connection status changed to " << is_connected;
     setIsConnected(is_connected);
 }
 
@@ -88,4 +106,16 @@ void DroneBackend::onStatusUpdate(const QString &newStatus)
         m_status = newStatus;
         emit statusChanged();
     }
+}
+
+void DroneBackend::onNewPacketReceived(const DataPacket &dataPacket)
+{
+    qInfo() << "_____________________________";
+    qInfo() << "Data packet received";
+    qInfo() << "Data size: " << dataPacket.m_header.dataSize;
+    qInfo() << "Packet id: " << dataPacket.m_header.packetId;
+    qInfo() << "Drone id: " << dataPacket.m_header.droneId;
+    qInfo() << "Type: " << dataPacket.m_header.type;
+    qInfo() << "Data: " << dataPacket.m_data;
+    qInfo() << "_____________________________";
 }
