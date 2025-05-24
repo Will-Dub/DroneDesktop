@@ -9,8 +9,9 @@ ApplicationWindow {
     visible: true
     title: qsTr("Drone application")
 
+    // Connect popup
     Popup {
-        id: popup
+        id: connectPopup
         anchors.centerIn: parent
         width: window.width / 2
         height: window.height / 2
@@ -155,7 +156,7 @@ ApplicationWindow {
                         }
                     }
                     onClicked: {
-                        popup.close();
+                        connectPopup.close();
                     }
                 }
 
@@ -233,6 +234,7 @@ ApplicationWindow {
         }
     }
 
+    // Top header
     header: ToolBar {
         id: mainToolBar
         height: 56
@@ -265,7 +267,7 @@ ApplicationWindow {
 
     RowLayout {
         anchors.fill: parent
-        spacing: 0
+        spacing: -1
 
         // Sidebar
         Pane{
@@ -286,14 +288,11 @@ ApplicationWindow {
                 anchors.right: parent.right
                 spacing: 20
 
+                // Connect btn
                 Button{
                     Layout.fillWidth: true
                     Layout.margins: 10
                     Layout.preferredHeight: 50
-
-                    text: drone.connected ? "Disconnect" : "Connect"
-                    font.bold: true
-                    font.pixelSize: 24
 
                     background: Rectangle {
                         color: parent.pressed ? "#1972c2" : (parent.hovered ? "#0276de" : "#0086ff")
@@ -309,20 +308,27 @@ ApplicationWindow {
                         }
                     }
 
-                    Image{
-                        source: "link.png"
-                        width: 24
-                        height: 24
-
-                        anchors{
-                            verticalCenter: parent.verticalCenter
-                            left: parent.left
-                            leftMargin: 15
+                    contentItem: RowLayout{
+                        clip: true
+                        Image{
+                            source: "link.png"
+                            Layout.preferredHeight: 24
+                            Layout.preferredWidth: 24
+                            Layout.alignment: Qt.AlignVCenter
+                            Layout.leftMargin: 16
+                        }
+                        Label{
+                            text: drone.connected ? "Disconnect" : "Connect"
+                            font.pixelSize: 24
+                            font.bold: true
+                            color: "black"
+                            elide: Text.ElideRight
+                            Layout.alignment: Qt.AlignLeft
                         }
                     }
 
                     onClicked: {
-                        popup.open()
+                        connectPopup.open()
                     }
                 }
 
