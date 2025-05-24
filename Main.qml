@@ -29,56 +29,170 @@ ApplicationWindow {
         focus: true
         closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutside
 
-        Label {
-            text: "Connect"
-            font.pixelSize: 30
-            font.bold: true
-            font.weight: Font.Medium
-            anchors{
-                horizontalCenter: parent.horizontalCenter
-                top: parent.top
-                topMargin: 30
+        ColumnLayout{
+            anchors.fill: parent
+
+            Label {
+                text: "Connect"
+                font.pixelSize: 30
+                font.bold: true
+                font.weight: Font.Medium
+                Layout.fillWidth: true
+                horizontalAlignment: Text.AlignHCenter
             }
-        }
 
-        Item {
-            width: 640
-            height: 480
-
-            Button {
-                id: connectBtn
-                text: "Send connect"
-                onClicked: {
-                    const response = drone.connectToDrone();
-                    console.log("Got response:", response);
+            ListModel{
+                id: listmodeltest
+                ListElement{
+                    text: "asdf1"
+                }
+                ListElement{
+                    text: "asdf2"
+                }
+                ListElement{
+                    text: "asdf3"
+                }
+                ListElement{
+                    text: "asdf4"
                 }
             }
 
-            Button {
-                id: disconnectBtn
-                text: "Send disconnect"
+            ListView {
+                id: listViewUsbDevice
 
-                anchors.left: connectBtn.right
+                Layout.fillHeight: true
+                Layout.fillWidth: true
 
-                onClicked: {
-                    const response = drone.disconnectDrone();
+                model: listmodeltest
+                currentIndex: -1
+
+                clip: true
+
+                delegate: Rectangle {
+                    width: ListView.view.width
+                    height: 40
+
+                    color: ListView.isCurrentItem ? "#3498db" : (mouseArea.containsMouse ? "#ecf0f1" : "#ffffff")
+                    border.color: ListView.isCurrentItem ? "#2980b9" : "#bdc3c7"
+                    border.width: 1
+
+                    Text {
+                        anchors.left: parent.left
+                        anchors.leftMargin: 10
+                        anchors.verticalCenter: parent.verticalCenter
+                        text: model.text
+                        color: ListView.isCurrentItem ? "white" : "black"
+                        font.bold: ListView.isCurrentItem
+                    }
+
+                    MouseArea {
+                        id: mouseArea
+                        anchors.fill: parent
+                        hoverEnabled: true
+                        onClicked: {
+                            if(parent.ListView.view.currentIndex !== model.index){
+                                parent.ListView.view.currentIndex = model.index
+                            }else{
+                                parent.ListView.view.currentIndex = -1
+                            }
+                        }
+                    }
                 }
             }
 
-            Button {
-                text: "Send packet"
+            RowLayout {
+                Layout.alignment: Qt.AlignHCenter
 
-                anchors.left: disconnectBtn.right
-
-                onClicked: {
-                    const response = drone.sendDataTest();
+                Button {
+                    Layout.preferredWidth: 100
+                    Layout.preferredHeight: 40
+                    text: "Cancel"
+                    font.bold: true
+                    font.pixelSize: 24
+                    background: Rectangle {
+                        color: parent.pressed ? "#a61e1e" : (parent.hovered ? "#c92a2a" : "#e03131")
+                        radius: 4
+                        border.width: parent.visualFocus ? 2 : 1
+                        border.color: parent.visualFocus ? "#862e2e" : (parent.hovered ? "#c92a2a" : "transparent")
+                        Behavior on color {
+                            ColorAnimation { duration: 150 }
+                        }
+                        Behavior on border.color {
+                            ColorAnimation { duration: 150 }
+                        }
+                    }
+                    onClicked: {
+                        popup.close();
+                    }
                 }
-            }
 
-            Connections {
-                target: drone
-                function onConnectedChanged() {
-                    console.log("Connection status changed:", drone.connected);
+                Button {
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: 40
+                    enabled: listViewUsbDevice.currentIndex >= 0
+                    visible: !drone.connected;
+                    text: "Connect"
+                    font.bold: true
+                    font.pixelSize: 24
+                    background: Rectangle {
+                        color: !parent.enabled ? "#404142" : parent.pressed ? "#2d8a2f" : (parent.hovered ? "#2e7d32" : "#4caf50")
+                        radius: 4
+                        border.width: parent.visualFocus && parent.enabled ? 2 : 1
+                        border.color: parent.visualFocus && parent.enabled ? "#1b5e20" : (parent.hovered && parent.enabled ? "#2d8a2f" : "transparent")
+                        Behavior on color {
+                            ColorAnimation { duration: 150 }
+                        }
+                        Behavior on border.color {
+                            ColorAnimation { duration: 150 }
+                        }
+                    }
+                    onClicked: {
+                        const index = listViewUsbDevice.currentIndex
+                        if (index >= 0) {
+                            console.log("Selected:", listViewUsbDevice.model.get(index).text, "  index ", index)
+                        }
+                        const response = drone.connectToDrone();
+                        console.log("Got response:", response);
+                    }
+                }
+
+                Button {
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: 40
+                    visible: drone.connected;
+                    text: "Disconnect"
+                    font.bold: true
+                    font.pixelSize: 24
+                    background: Rectangle {
+                        color: parent.pressed ? "#d32f2f" : (parent.hovered ? "#f44336" : "#ff5722")
+                        radius: 4
+                        border.width: parent.visualFocus ? 2 : 1
+                        border.color: parent.visualFocus ? "#b71c1c" : (parent.hovered ? "#d32f2f" : "transparent")
+                        Behavior on color {
+                            ColorAnimation { duration: 150 }
+                        }
+                        Behavior on border.color {
+                            ColorAnimation { duration: 150 }
+                        }
+                    }
+                    onClicked: {
+                        const response = drone.disconnectDrone();
+                    }
+                }
+
+                /*Button {
+                    text: "Send packet"
+
+                    onClicked: {
+                        const response = drone.sendDataTest();
+                    }
+                }*/
+
+                Connections {
+                    target: drone
+                    function onConnectedChanged() {
+                        console.log("Connection status changed:", drone.connected);
+                    }
                 }
             }
         }
@@ -142,7 +256,7 @@ ApplicationWindow {
                     Layout.margins: 10
                     Layout.preferredHeight: 50
 
-                    text: "Connect"
+                    text: drone.connected ? "Disconnect" : "Connect"
                     font.bold: true
                     font.pixelSize: 24
 
