@@ -22,7 +22,7 @@ ApplicationWindow {
             anchors.fill: parent
 
             Label {
-                text: drone.connected ? "Connect" : "Disconnect"
+                text: drone.connected ? "Disconnect" : "Connect"
                 font.pixelSize: 30
                 font.bold: true
                 font.weight: Font.Medium

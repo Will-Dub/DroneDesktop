@@ -61,9 +61,9 @@ void DroneWorker::connectToDrone(const QString &portName)
 
 void DroneWorker::disconnectDrone()
 {
-    m_serialPort->close();
     disconnect(m_serialPort, &QSerialPort::readyRead, this, &DroneWorker::handleReadData);
     disconnect(m_serialPort, &QSerialPort::errorOccurred, this, &DroneWorker::handleError);
+    m_serialPort->close();
     emit connectionStatusChanged(false);
 }
 
