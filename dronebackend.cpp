@@ -32,6 +32,9 @@ DroneBackend::DroneBackend(QObject *parent) : QObject(parent), m_is_connected(fa
 
     // Start the thread
     m_workerThread->start();
+
+    // Update the list of usb device connected
+    updateUsbDevices();
 }
 
 DroneBackend::~DroneBackend(){
@@ -67,10 +70,15 @@ QString DroneBackend::status() const
     return m_status;
 }
 
-bool DroneBackend::connectToDrone()
+QVariantList DroneBackend::usbDevices() const
+{
+    return m_usbDevices;
+}
+
+bool DroneBackend::connectToDrone(const QString& portName)
 {
     if (!m_is_connected) {
-        emit doConnect("COM3");
+        emit doConnect(portName);
         return true;
     }
     return false;
@@ -118,4 +126,38 @@ void DroneBackend::onNewPacketReceived(const DataPacket &dataPacket)
     qInfo() << "Type: " << dataPacket.m_header.type;
     qInfo() << "Data: " << dataPacket.m_data;
     qInfo() << "_____________________________";
+}
+
+void DroneBackend::onRefreshUsbDevices()
+{
+    updateUsbDevices();
+}
+
+void DroneBackend::updateUsbDevices()
+{
+    QVariantList newDevices;
+
+    const auto serialPortInfos = QSerialPortInfo::availablePorts();
+
+    for (const QSerialPortInfo &portInfo : serialPortInfos) {
+        newDevices.append(mapDeviceInfo(portInfo));
+    }
+
+    if (newDevices != m_usbDevices) {
+        m_usbDevices = newDevices;
+        emit usbDevicesChanged();
+        qDebug() << "USB devices updated. Found" << m_usbDevices.size() << "devices";
+    }
+}
+
+QVariantMap DroneBackend::mapDeviceInfo(const QSerialPortInfo &portInfo)
+{
+    QVariantMap deviceInfo;
+
+    deviceInfo["portName"] = portInfo.portName();
+    deviceInfo["systemLocation"] = portInfo.systemLocation();
+    deviceInfo["manufacturer"] = portInfo.manufacturer();
+    deviceInfo["serialNumber"] = portInfo.serialNumber();
+
+    return deviceInfo;
 }

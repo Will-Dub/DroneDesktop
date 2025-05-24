@@ -9,17 +9,6 @@ ApplicationWindow {
     visible: true
     title: qsTr("Drone application")
 
-
-    ListModel{
-        id: navigationModel
-        ListElement {
-            displayText: "Home"
-        }
-        ListElement {
-            displayText: "Options"
-        }
-    }
-
     Popup {
         id: popup
         anchors.centerIn: parent
@@ -33,7 +22,7 @@ ApplicationWindow {
             anchors.fill: parent
 
             Label {
-                text: "Connect"
+                text: drone.connected ? "Connect" : "Disconnect"
                 font.pixelSize: 30
                 font.bold: true
                 font.weight: Font.Medium
@@ -41,32 +30,58 @@ ApplicationWindow {
                 horizontalAlignment: Text.AlignHCenter
             }
 
-            ListModel{
-                id: listmodeltest
-                ListElement{
-                    text: "asdf1"
-                }
-                ListElement{
-                    text: "asdf2"
-                }
-                ListElement{
-                    text: "asdf3"
-                }
-                ListElement{
-                    text: "asdf4"
+            // Refresh btn
+            Button{
+                icon.source: "refresh.png"
+                icon.width: 24
+                icon.height: 24
+                onClicked: {
+                    drone.onRefreshUsbDevices()
                 }
             }
 
+            // List of usb devices
             ListView {
                 id: listViewUsbDevice
 
                 Layout.fillHeight: true
                 Layout.fillWidth: true
 
-                model: listmodeltest
+                model: drone.usbDevices
                 currentIndex: -1
 
                 clip: true
+
+                enabled: !drone.connected
+
+                header: Rectangle {
+                    width: parent.width
+                    height: 45
+                    color: "#252525"
+
+                    Row {
+                        anchors.fill: parent
+                        anchors.leftMargin: 15
+                        anchors.rightMargin: 15
+
+                        HeaderColumn {
+                            width: 100
+                            text: "Port"
+                        }
+                        HeaderColumn {
+                            width: 200
+                            text: "System Location"
+                        }
+                        HeaderColumn {
+                            width: 150
+                            text: "Manufacturer"
+                        }
+                        HeaderColumn {
+                            width: 120
+                            text: "Serial Number"
+                        }
+                    }
+                }
 
                 delegate: Rectangle {
                     width: ListView.view.width
@@ -76,13 +91,29 @@ ApplicationWindow {
                     border.color: ListView.isCurrentItem ? "#2980b9" : "#bdc3c7"
                     border.width: 1
 
-                    Text {
-                        anchors.left: parent.left
-                        anchors.leftMargin: 10
-                        anchors.verticalCenter: parent.verticalCenter
-                        text: model.text
-                        color: ListView.isCurrentItem ? "white" : "black"
-                        font.bold: ListView.isCurrentItem
+                    Row {
+                        anchors.fill: parent
+                        anchors.leftMargin: 15
+                        anchors.rightMargin: 15
+
+                        DataColumn {
+                            width: 100
+                            text: modelData.portName || "N/A"
+                            bold: true
+                            textColor: "#2c3e50"
+                        }
+                        DataColumn {
+                            width: 200
+                            text: modelData.systemLocation || "N/A"
+                        }
+                        DataColumn {
+                            width: 150
+                            text: modelData.manufacturer || "N/A"
+                        }
+                        DataColumn {
+                            width: 120
+                            text: modelData.serialNumber || "N/A"
+                        }
                     }
 
                     MouseArea {
@@ -100,9 +131,11 @@ ApplicationWindow {
                 }
             }
 
+            // Bottom action row
             RowLayout {
                 Layout.alignment: Qt.AlignHCenter
 
+                // Cancel btn
                 Button {
                     Layout.preferredWidth: 100
                     Layout.preferredHeight: 40
@@ -126,6 +159,7 @@ ApplicationWindow {
                     }
                 }
 
+                // Connect btn
                 Button {
                     Layout.fillWidth: true
                     Layout.preferredHeight: 40
@@ -148,14 +182,15 @@ ApplicationWindow {
                     }
                     onClicked: {
                         const index = listViewUsbDevice.currentIndex
+
                         if (index >= 0) {
-                            console.log("Selected:", listViewUsbDevice.model.get(index).text, "  index ", index)
+                            const portName = listViewUsbDevice.model[index].portName;
+                            drone.connectToDrone(portName);
                         }
-                        const response = drone.connectToDrone();
-                        console.log("Got response:", response);
                     }
                 }
 
+                // Disconnect btn
                 Button {
                     Layout.fillWidth: true
                     Layout.preferredHeight: 40
