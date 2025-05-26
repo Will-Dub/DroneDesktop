@@ -234,6 +234,16 @@ ApplicationWindow {
         }
     }
 
+    Popup {
+        id: gamepadPopup
+        anchors.centerIn: parent
+        width: window.width / 2
+        height: window.height / 2
+        modal: true
+        focus: true
+        closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutside
+    }
+
     // Top header
     header: ToolBar {
         id: mainToolBar
@@ -288,16 +298,17 @@ ApplicationWindow {
                 anchors.right: parent.right
                 spacing: 20
 
-                // Connect btn
+                // Connect usb btn
                 Button{
                     Layout.fillWidth: true
                     Layout.margins: 10
+                    Layout.bottomMargin: 0
                     Layout.preferredHeight: 50
 
                     background: Rectangle {
                         color: parent.pressed ? "#1972c2" : (parent.hovered ? "#0276de" : "#0086ff")
                         radius: 4
-                        border.width: parent.visualFocus ? 2 : 1
+                        border.width: parent.visualFocus ? 2 : 0
                         border.color: parent.visualFocus ? "#074175" : (parent.hovered ? "#0968bd" : "transparent")
 
                         Behavior on color {
@@ -329,6 +340,52 @@ ApplicationWindow {
 
                     onClicked: {
                         connectPopup.open()
+                    }
+                }
+
+                // Connect gamepad
+                Button{
+                    Layout.fillWidth: true
+                    Layout.margins: 10
+                    Layout.topMargin: 0
+                    Layout.preferredHeight: 50
+
+                    background: Rectangle {
+                        id: gamepadBackground
+                        color: parent.pressed ? "#dc2626" : (parent.hovered ? "#b82121" : "#991b1b")
+                        radius: 4
+                        border.width: parent.visualFocus ? 2 : 0
+                        border.color: parent.visualFocus ? "#7f1d1d" : "transparent"
+
+                        Behavior on color {
+                            ColorAnimation { duration: 200; easing.type: Easing.OutCubic }
+                        }
+                        Behavior on border.color {
+                            ColorAnimation { duration: 200; easing.type: Easing.OutCubic }
+                        }
+                    }
+
+                    contentItem: RowLayout{
+                        clip: true
+                        Image{
+                            source: "gamepad.png"
+                            Layout.preferredHeight: 24
+                            Layout.preferredWidth: 24
+                            Layout.alignment: Qt.AlignVCenter
+                            Layout.leftMargin: 16
+                        }
+                        Label{
+                            text: drone.connected ? "Disconnect" : "Connect"
+                            font.pixelSize: 24
+                            font.bold: true
+                            color: "white"
+                            elide: Text.ElideRight
+                            Layout.alignment: Qt.AlignLeft
+                        }
+                    }
+
+                    onClicked: {
+                        gamepadPopup.open()
                     }
                 }
 

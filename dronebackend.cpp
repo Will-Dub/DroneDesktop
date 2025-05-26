@@ -1,53 +1,69 @@
 #include "dronebackend.h"
 
 DroneBackend::DroneBackend(QObject *parent) : QObject(parent), m_is_connected(false), m_status("Disconnected") {
-    m_worker = new DroneWorker();
+    // Usb worker
+    m_usbWorker = new DroneWorker();
 
-    m_workerThread = new QThread(this);
-    m_worker->moveToThread(m_workerThread);
+    m_usbThread = new QThread(this);
+    m_usbWorker->moveToThread(m_usbThread);
 
     // Connect start and finish
-    connect(m_workerThread, &QThread::finished, m_worker, &QObject::deleteLater);
+    connect(m_usbThread, &QThread::finished, m_usbWorker, &QObject::deleteLater);
 
-    connect(m_workerThread, &QThread::started, m_worker, [this]() {
+    connect(m_usbThread, &QThread::started, m_usbWorker, [this]() {
         qDebug() << "Worker thread started";
     });
 
     // Connect backend to worker
     connect(this, &DroneBackend::doConnect,
-            m_worker, &DroneWorker::connectToDrone);
+            m_usbWorker, &DroneWorker::connectToDrone);
 
     connect(this, &DroneBackend::doDisconnect,
-            m_worker, &DroneWorker::disconnectDrone);
+            m_usbWorker, &DroneWorker::disconnectDrone);
 
     connect(this, &DroneBackend::doWriteData,
-            m_worker, &DroneWorker::writeData);
+            m_usbWorker, &DroneWorker::writeData);
 
     // Connect worker to backend
-    connect(m_worker, &DroneWorker::connectionStatusChanged,
+    connect(m_usbWorker, &DroneWorker::connectionStatusChanged,
             this, &DroneBackend::onConnectionStatusChanged);
 
-    connect(m_worker, &DroneWorker::newPacketReceived,
+    connect(m_usbWorker, &DroneWorker::newPacketReceived,
             this, &DroneBackend::onNewPacketReceived);
 
     // Start the thread
-    m_workerThread->start();
+    m_usbThread->start();
+
+    // Gamepad worker
+    /*m_gamepadWorker = new GamepadWorker();
+
+    m_gamepadThread = new QThread(this);
+    m_gamepadWorker->moveToThread(m_gamepadThread);
+
+    // Connect start and finish
+    connect(m_gamepadThread, &QThread::finished, m_gamepadWorker, &QObject::deleteLater);
+
+    connect(m_gamepadThread, &QThread::started, m_gamepadWorker, [this]() {
+        qDebug() << "Worker thread started";
+    });
+
+    m_gamepadThread->start();*/
 
     // Update the list of usb device connected
     updateUsbDevices();
 }
 
 DroneBackend::~DroneBackend(){
-    if (m_worker && m_workerThread) {
-        m_worker->stopWorking();
+    if (m_usbWorker && m_usbThread) {
+        m_usbWorker->stopWorking();
 
         // tell to quit and wait
-        m_workerThread->quit();
+        m_usbThread->quit();
 
-        if (!m_workerThread->wait(3000)) {
+        if (!m_usbThread->wait(3000)) {
             qWarning() << "DroneBackend: Worker thread failed to terminate, forcing termination";
-            m_workerThread->terminate();
-            m_workerThread->wait();
+            m_usbThread->terminate();
+            m_usbThread->wait();
         }
     }
 }
@@ -73,6 +89,11 @@ QString DroneBackend::status() const
 QVariantList DroneBackend::usbDevices() const
 {
     return m_usbDevices;
+}
+
+QVariantList DroneBackend::gamepadDevices() const
+{
+    return m_gamepadDevices;
 }
 
 bool DroneBackend::connectToDrone(const QString& portName)
@@ -144,6 +165,11 @@ void DroneBackend::onRefreshUsbDevices()
     updateUsbDevices();
 }
 
+void DroneBackend::onRefreshGamepadDevices()
+{
+    updateGamepadDevices();
+}
+
 void DroneBackend::updateUsbDevices()
 {
     QVariantList newDevices;
@@ -159,6 +185,11 @@ void DroneBackend::updateUsbDevices()
         emit usbDevicesChanged();
         qDebug() << "USB devices updated. Found" << m_usbDevices.size() << "devices";
     }
+}
+
+void DroneBackend::updateGamepadDevices()
+{
+
 }
 
 QVariantMap DroneBackend::mapDeviceInfo(const QSerialPortInfo &portInfo)
