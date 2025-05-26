@@ -9,7 +9,7 @@ ApplicationWindow {
     visible: true
     title: qsTr("Drone application")
 
-    // Connect popup
+    // Connect usb popup
     Popup {
         id: connectPopup
         anchors.centerIn: parent

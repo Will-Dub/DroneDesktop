@@ -5,6 +5,7 @@ project(DroneDesktop VERSION 0.1 LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 find_package(Qt6 REQUIRED COMPONENTS Quick SerialPort)
+find_package(SDL3 REQUIRED)
 
 qt_standard_project_setup(REQUIRES 6.8)
 
@@ -48,7 +49,7 @@ set_target_properties(appDroneDesktop PROPERTIES
 )
 
 target_link_libraries(appDroneDesktop
-    PRIVATE Qt6::Quick Qt${QT_VERSION_MAJOR}::SerialPort
+    PRIVATE Qt6::Quick Qt${QT_VERSION_MAJOR}::SerialPort SDL3::SDL3
 )
 
 include(GNUInstallDirs)

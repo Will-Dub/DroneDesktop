@@ -104,6 +104,17 @@ void DroneBackend::sendDataTest()
 
 void DroneBackend::onConnectionStatusChanged(const bool is_connected)
 {
+    if(is_connected){
+        DataPacket startPacket{1,1,DataPacketType::START,{}};
+        emit doWriteData(startPacket);
+
+        DataPacket statusPacket{1,1,DataPacketType::STATUS,{}};
+        emit doWriteData(statusPacket);
+    }else{
+        DataPacket startPacket{1,1,DataPacketType::STOP,{}};
+        emit doWriteData(startPacket);
+    }
+
     qDebug() << "DroneBackend: Connection status changed to " << is_connected;
     setIsConnected(is_connected);
 }
