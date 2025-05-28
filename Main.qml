@@ -223,13 +223,6 @@ ApplicationWindow {
                         const response = drone.sendDataTest();
                     }
                 }*/
-
-                Connections {
-                    target: drone
-                    function onConnectedChanged() {
-                        console.log("Connection status changed:", drone.connected);
-                    }
-                }
             }
         }
     }
@@ -242,6 +235,205 @@ ApplicationWindow {
         modal: true
         focus: true
         closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutside
+
+        ColumnLayout{
+            anchors.fill: parent
+
+            Label {
+                text: drone.connected ? "Disconnect a gamepad" : "Connect a gamepad"
+                font.pixelSize: 30
+                font.bold: true
+                font.weight: Font.Medium
+                Layout.fillWidth: true
+                horizontalAlignment: Text.AlignHCenter
+            }
+
+            // Refresh btn
+            Button{
+                icon.source: "refresh.png"
+                icon.width: 24
+                icon.height: 24
+                onClicked: {
+                    drone.onRefreshGamepadDevices()
+                }
+            }
+
+            // List of usb devices
+            ListView {
+                id: listViewGamepadDevice
+
+                Layout.fillHeight: true
+                Layout.fillWidth: true
+
+                model: drone.gamepadDevices
+                currentIndex: -1
+
+                clip: true
+
+                enabled: !drone.gamepadConnected
+
+                header: Rectangle {
+                    width: parent.width
+                    height: 45
+                    color: "#252525"
+
+                    Row {
+                        anchors.fill: parent
+                        anchors.leftMargin: 15
+                        anchors.rightMargin: 15
+
+                        HeaderColumn {
+                            width: 100
+                            text: "Id"
+                        }
+                        HeaderColumn {
+                            width: 200
+                            text: "Name"
+                        }
+                        HeaderColumn {
+                            width: 150
+                            text: "Type"
+                        }
+                    }
+                }
+
+                delegate: Rectangle {
+                    width: ListView.view.width
+                    height: 40
+
+                    color: ListView.isCurrentItem ? "#3498db" : (gamepadMouseArea.containsMouse ? "#ecf0f1" : "#ffffff")
+                    border.color: ListView.isCurrentItem ? "#2980b9" : "#bdc3c7"
+                    border.width: 1
+
+                    Row {
+                        anchors.fill: parent
+                        anchors.leftMargin: 15
+                        anchors.rightMargin: 15
+
+                        DataColumn {
+                            width: 100
+                            text: modelData.id || "N/A"
+                            bold: true
+                            textColor: "#2c3e50"
+                        }
+                        DataColumn {
+                            width: 200
+                            text: modelData.name || "N/A"
+                        }
+                        DataColumn {
+                            width: 150
+                            text: modelData.type || "N/A"
+                        }
+                    }
+
+                    MouseArea {
+                        id: gamepadMouseArea
+                        anchors.fill: parent
+                        hoverEnabled: true
+                        onClicked: {
+                            if(parent.ListView.view.currentIndex !== model.index){
+                                parent.ListView.view.currentIndex = model.index
+                            }else{
+                                parent.ListView.view.currentIndex = -1
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Bottom action row
+            RowLayout {
+                Layout.alignment: Qt.AlignHCenter
+
+                // Cancel btn
+                Button {
+                    Layout.preferredWidth: 100
+                    Layout.preferredHeight: 40
+                    text: "Cancel"
+                    font.bold: true
+                    font.pixelSize: 24
+                    background: Rectangle {
+                        color: parent.pressed ? "#a61e1e" : (parent.hovered ? "#c92a2a" : "#e03131")
+                        radius: 4
+                        border.width: parent.visualFocus ? 2 : 1
+                        border.color: parent.visualFocus ? "#862e2e" : (parent.hovered ? "#c92a2a" : "transparent")
+                        Behavior on color {
+                            ColorAnimation { duration: 150 }
+                        }
+                        Behavior on border.color {
+                            ColorAnimation { duration: 150 }
+                        }
+                    }
+                    onClicked: {
+                        gamepadPopup.close();
+                    }
+                }
+
+                // Connect btn
+                Button {
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: 40
+                    enabled: listViewGamepadDevice.currentIndex >= 0
+                    visible: !drone.gamepadConnected;
+                    text: "Connect"
+                    font.bold: true
+                    font.pixelSize: 24
+                    background: Rectangle {
+                        color: !parent.enabled ? "#404142" : parent.pressed ? "#2d8a2f" : (parent.hovered ? "#2e7d32" : "#4caf50")
+                        radius: 4
+                        border.width: parent.visualFocus && parent.enabled ? 2 : 1
+                        border.color: parent.visualFocus && parent.enabled ? "#1b5e20" : (parent.hovered && parent.enabled ? "#2d8a2f" : "transparent")
+                        Behavior on color {
+                            ColorAnimation { duration: 150 }
+                        }
+                        Behavior on border.color {
+                            ColorAnimation { duration: 150 }
+                        }
+                    }
+                    onClicked: {
+                        const index = listViewGamepadDevice.currentIndex
+
+                        if (index >= 0) {
+                            const joystickId = listViewGamepadDevice.model[index].id;
+                            drone.connectToGamepad(joystickId);
+                        }
+                    }
+                }
+
+                // Disconnect btn
+                Button {
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: 40
+                    visible: drone.gamepadConnected;
+                    text: "Disconnect"
+                    font.bold: true
+                    font.pixelSize: 24
+                    background: Rectangle {
+                        color: parent.pressed ? "#d32f2f" : (parent.hovered ? "#f44336" : "#ff5722")
+                        radius: 4
+                        border.width: parent.visualFocus ? 2 : 1
+                        border.color: parent.visualFocus ? "#b71c1c" : (parent.hovered ? "#d32f2f" : "transparent")
+                        Behavior on color {
+                            ColorAnimation { duration: 150 }
+                        }
+                        Behavior on border.color {
+                            ColorAnimation { duration: 150 }
+                        }
+                    }
+                    onClicked: {
+                        const response = drone.disconnectGamepad();
+                    }
+                }
+
+                /*Button {
+                    text: "Send packet"
+
+                    onClicked: {
+                        const response = drone.sendDataTest();
+                    }
+                }*/
+            }
+        }
     }
 
     // Top header

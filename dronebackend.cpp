@@ -1,6 +1,11 @@
 #include "dronebackend.h"
 
 DroneBackend::DroneBackend(QObject *parent) : QObject(parent), m_is_connected(false), m_status("Disconnected") {
+    // Init sdl3
+    if (SDL_Init(SDL_INIT_GAMEPAD | SDL_INIT_EVENTS) == false) {
+        qCritical() << "SDL_Init Error: " << SDL_GetError();
+    }
+
     // Usb worker
     m_usbWorker = new DroneWorker();
 
@@ -34,21 +39,6 @@ DroneBackend::DroneBackend(QObject *parent) : QObject(parent), m_is_connected(fa
     // Start the thread
     m_usbThread->start();
 
-    // Gamepad worker
-    /*m_gamepadWorker = new GamepadWorker();
-
-    m_gamepadThread = new QThread(this);
-    m_gamepadWorker->moveToThread(m_gamepadThread);
-
-    // Connect start and finish
-    connect(m_gamepadThread, &QThread::finished, m_gamepadWorker, &QObject::deleteLater);
-
-    connect(m_gamepadThread, &QThread::started, m_gamepadWorker, [this]() {
-        qDebug() << "Worker thread started";
-    });
-
-    m_gamepadThread->start();*/
-
     // Update the list of usb device connected
     updateUsbDevices();
 }
@@ -71,6 +61,11 @@ DroneBackend::~DroneBackend(){
 bool DroneBackend::isConnected() const
 {
     return m_is_connected;
+}
+
+bool DroneBackend::isGamepadConnected() const
+{
+    return m_is_gamepad_connected;
 }
 
 void DroneBackend::setIsConnected(bool is_connected)
@@ -105,11 +100,71 @@ bool DroneBackend::connectToDrone(const QString& portName)
     return false;
 }
 
+bool DroneBackend::connectToGamepad(const int joystickId)
+{
+    if(m_is_gamepad_connected || m_gamepadWorker || m_gamepadThread){
+        disconnectGamepad();
+        return false;
+    }
+
+    SDL_Gamepad *gamepad = SDL_OpenGamepad(joystickId);
+
+    if(gamepad == nullptr){
+        qWarning() << "Error openning the gamepad";
+        return false;
+    }
+
+    m_gamepadWorker = new GamepadWorker(gamepad);
+
+    m_gamepadThread = new QThread(this);
+    m_gamepadWorker->moveToThread(m_gamepadThread);
+
+    // Connect start and finish
+    connect(m_gamepadThread, &QThread::finished, m_gamepadWorker, &QObject::deleteLater);
+
+    connect(m_gamepadThread, &QThread::started, m_gamepadWorker, [this]() {
+        qDebug() << "Worker thread started";
+    });
+
+    // Connect worker signals to slots
+    connect(m_gamepadWorker, &GamepadWorker::eventQuit, this, &DroneBackend::onEventQuit);
+
+    m_gamepadThread->start();
+
+    m_is_gamepad_connected = true;
+    emit gamepadConnectedChanged();
+    return true;
+}
+
 void DroneBackend::disconnectDrone()
 {
     if(m_is_connected){
         emit doDisconnect();
     }
+}
+
+void DroneBackend::disconnectGamepad()
+{
+    if (!m_is_gamepad_connected || !m_gamepadWorker || !m_gamepadThread) {
+        return;
+    }
+
+    // Stop the worker thread
+    m_gamepadThread->quit();
+
+    // Wait for thread to finish
+    if (!m_gamepadThread->wait(3000)) {
+        qWarning() << "Gamepad thread did not finish within timeout";
+        m_gamepadThread->terminate();
+        m_gamepadThread->wait(1000);
+    }
+
+    m_gamepadThread = nullptr;
+    m_gamepadWorker = nullptr;
+    m_is_gamepad_connected = false;
+    emit gamepadConnectedChanged();
+
+    qDebug() << "Gamepad disconnected successfully";
 }
 
 void DroneBackend::sendDataTest()
@@ -170,6 +225,12 @@ void DroneBackend::onRefreshGamepadDevices()
     updateGamepadDevices();
 }
 
+void DroneBackend::onEventQuit()
+{
+    qInfo() << "Drone backend: Gamepad called event quit";
+    disconnectGamepad();
+}
+
 void DroneBackend::updateUsbDevices()
 {
     QVariantList newDevices;
@@ -189,7 +250,53 @@ void DroneBackend::updateUsbDevices()
 
 void DroneBackend::updateGamepadDevices()
 {
+    QVariantList newGamepads;
 
+    int count = 0;
+    SDL_JoystickID* joysticks = SDL_GetGamepads(&count);
+
+    for (int i = 0; i < count; ++i) {
+        if (SDL_IsGamepad(joysticks[i])) {
+            newGamepads.append(mapGamepadDeviceInfo(joysticks[i]));
+        }
+    }
+
+    SDL_free(joysticks);
+
+    if (newGamepads != m_gamepadDevices) {
+        m_gamepadDevices = newGamepads;
+        emit gamepadDevicesChanged();
+        qDebug() << "Gamepad devices updated. Found" << m_gamepadDevices.size() << "devices";
+    }
+}
+
+QVariantMap DroneBackend::mapGamepadDeviceInfo(SDL_JoystickID joystickId)
+{
+    QVariantMap deviceInfo;
+    deviceInfo["id"] = static_cast<int>(joystickId);
+    deviceInfo["name"] = QString(SDL_GetGamepadNameForID(joystickId));
+    deviceInfo["type"] = gamepadTypeToString(SDL_GetGamepadTypeForID(joystickId));
+    return deviceInfo;
+}
+
+QString DroneBackend::gamepadTypeToString(SDL_GamepadType type) {
+    switch (type) {
+        case SDL_GAMEPAD_TYPE_STANDARD:
+            return "Standard";
+        case SDL_GAMEPAD_TYPE_PS3:
+            return "PlayStation 3";
+        case SDL_GAMEPAD_TYPE_PS4:
+            return "PlayStation 4";
+        case SDL_GAMEPAD_TYPE_PS5:
+            return "PlayStation 5";
+        case SDL_GAMEPAD_TYPE_XBOX360:
+            return "Xbox 360";
+        case SDL_GAMEPAD_TYPE_XBOXONE:
+            return "Xbox One";
+        case SDL_GAMEPAD_TYPE_UNKNOWN:
+        default:
+            return "Unknown";
+    }
 }
 
 QVariantMap DroneBackend::mapDeviceInfo(const QSerialPortInfo &portInfo)

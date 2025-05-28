@@ -13,7 +13,10 @@ public:
     explicit GamepadWorker(SDL_Gamepad *gamepad, QObject *parent = nullptr);
     ~GamepadWorker();
 
-public slots:
+signals:
+    void eventQuit();
+
+private:
     void startPolling();
     void stopPolling();
 
