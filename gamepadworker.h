@@ -3,14 +3,15 @@
 
 #include <QObject>
 #include <QTimer>
-#include <SDL3/SDL_gamepad.h>
+#include <SDL2/SDL.h>
 #include <QDebug>
 
 class GamepadWorker : public QObject
 {
     Q_OBJECT
+
 public:
-    explicit GamepadWorker(SDL_Gamepad *gamepad, QObject *parent = nullptr);
+    explicit GamepadWorker(SDL_GameController *gameController, QObject *parent = nullptr);
     ~GamepadWorker();
 
 signals:
@@ -22,7 +23,7 @@ private:
 
 private:
     QTimer *m_pollTimer;
-    SDL_Gamepad *m_gamepad;
+    SDL_GameController *m_gameController;
 };
 
 #endif // GAMEPADWORKER_H

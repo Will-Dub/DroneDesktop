@@ -7,18 +7,17 @@
 #include <QThread>
 #include <QDebug>
 #include <QVariantList>
-#include <SDL3/SDL.h>
-#include <SDL3/SDL_gamepad.h>
+#include <SDL2/SDL.h>
 
 class DroneBackend : public QObject
 {
     Q_OBJECT
-
     Q_PROPERTY(bool connected READ isConnected NOTIFY connectedChanged)
     Q_PROPERTY(bool gamepadConnected READ isGamepadConnected NOTIFY gamepadConnectedChanged)
     Q_PROPERTY(QString status READ status NOTIFY statusChanged)
     Q_PROPERTY(QVariantList usbDevices READ usbDevices NOTIFY usbDevicesChanged)
     Q_PROPERTY(QVariantList gamepadDevices READ gamepadDevices NOTIFY gamepadDevicesChanged)
+
 public:
     explicit DroneBackend(QObject* parent = nullptr);
     ~DroneBackend();
@@ -70,6 +69,7 @@ private:
 
     QVariantList m_usbDevices;
     QVariantList m_gamepadDevices;
+
     void updateUsbDevices();
     void updateGamepadDevices();
     QVariantMap mapDeviceInfo(const QSerialPortInfo &portInfo);
@@ -79,7 +79,7 @@ private:
     bool m_is_gamepad_connected;
     QString m_status;
 
-    static QString gamepadTypeToString(SDL_GamepadType type);
+    static QString gamepadTypeToString(SDL_GameControllerType type);
 };
 
 #endif // DRONEBACKEND_H

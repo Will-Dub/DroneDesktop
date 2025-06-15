@@ -2,7 +2,7 @@
 
 DroneBackend::DroneBackend(QObject *parent) : QObject(parent), m_is_connected(false), m_status("Disconnected") {
     // Init sdl3
-    if (SDL_Init(SDL_INIT_GAMEPAD | SDL_INIT_EVENTS) == false) {
+    if (SDL_Init(SDL_INIT_GAMECONTROLLER | SDL_INIT_EVENTS) < 0) {
         qCritical() << "SDL_Init Error: " << SDL_GetError();
     }
 
@@ -107,30 +107,25 @@ bool DroneBackend::connectToGamepad(const int joystickId)
         return false;
     }
 
-    SDL_Gamepad *gamepad = SDL_OpenGamepad(joystickId);
-
-    if(gamepad == nullptr){
-        qWarning() << "Error openning the gamepad";
+    SDL_GameController *gameController = SDL_GameControllerOpen(joystickId);
+    if(gameController == nullptr){
+        qWarning() << "Error opening the gamepad";
         return false;
     }
 
-    m_gamepadWorker = new GamepadWorker(gamepad);
-
+    m_gamepadWorker = new GamepadWorker(gameController);
     m_gamepadThread = new QThread(this);
     m_gamepadWorker->moveToThread(m_gamepadThread);
 
     // Connect start and finish
     connect(m_gamepadThread, &QThread::finished, m_gamepadWorker, &QObject::deleteLater);
-
     connect(m_gamepadThread, &QThread::started, m_gamepadWorker, [this]() {
         qDebug() << "Worker thread started";
     });
 
     // Connect worker signals to slots
     connect(m_gamepadWorker, &GamepadWorker::eventQuit, this, &DroneBackend::onEventQuit);
-
     m_gamepadThread->start();
-
     m_is_gamepad_connected = true;
     emit gamepadConnectedChanged();
     return true;
@@ -251,18 +246,12 @@ void DroneBackend::updateUsbDevices()
 void DroneBackend::updateGamepadDevices()
 {
     QVariantList newGamepads;
-
-    int count = 0;
-    SDL_JoystickID* joysticks = SDL_GetGamepads(&count);
-
+    int count = SDL_NumJoysticks();
     for (int i = 0; i < count; ++i) {
-        if (SDL_IsGamepad(joysticks[i])) {
-            newGamepads.append(mapGamepadDeviceInfo(joysticks[i]));
+        if (SDL_IsGameController(i)) {
+            newGamepads.append(mapGamepadDeviceInfo(i));
         }
     }
-
-    SDL_free(joysticks);
-
     if (newGamepads != m_gamepadDevices) {
         m_gamepadDevices = newGamepads;
         emit gamepadDevicesChanged();
@@ -274,28 +263,28 @@ QVariantMap DroneBackend::mapGamepadDeviceInfo(SDL_JoystickID joystickId)
 {
     QVariantMap deviceInfo;
     deviceInfo["id"] = static_cast<int>(joystickId);
-    deviceInfo["name"] = QString(SDL_GetGamepadNameForID(joystickId));
-    deviceInfo["type"] = gamepadTypeToString(SDL_GetGamepadTypeForID(joystickId));
+    deviceInfo["name"] = QString(SDL_GameControllerNameForIndex(joystickId));
+    deviceInfo["type"] = gamepadTypeToString(SDL_GameControllerTypeForIndex(joystickId));
     return deviceInfo;
 }
 
-QString DroneBackend::gamepadTypeToString(SDL_GamepadType type) {
+QString DroneBackend::gamepadTypeToString(SDL_GameControllerType type) {
     switch (type) {
-        case SDL_GAMEPAD_TYPE_STANDARD:
-            return "Standard";
-        case SDL_GAMEPAD_TYPE_PS3:
-            return "PlayStation 3";
-        case SDL_GAMEPAD_TYPE_PS4:
-            return "PlayStation 4";
-        case SDL_GAMEPAD_TYPE_PS5:
-            return "PlayStation 5";
-        case SDL_GAMEPAD_TYPE_XBOX360:
-            return "Xbox 360";
-        case SDL_GAMEPAD_TYPE_XBOXONE:
-            return "Xbox One";
-        case SDL_GAMEPAD_TYPE_UNKNOWN:
-        default:
-            return "Unknown";
+    case SDL_CONTROLLER_TYPE_XBOX360:
+        return "Xbox 360";
+    case SDL_CONTROLLER_TYPE_XBOXONE:
+        return "Xbox One";
+    case SDL_CONTROLLER_TYPE_PS3:
+        return "PlayStation 3";
+    case SDL_CONTROLLER_TYPE_PS4:
+        return "PlayStation 4";
+    case SDL_CONTROLLER_TYPE_PS5:
+        return "PlayStation 5";
+    case SDL_CONTROLLER_TYPE_NINTENDO_SWITCH_PRO:
+        return "Nintendo Switch Pro";
+    case SDL_CONTROLLER_TYPE_UNKNOWN:
+    default:
+        return "Unknown";
     }
 }
 

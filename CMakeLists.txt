@@ -5,7 +5,7 @@ project(DroneDesktop VERSION 0.1 LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 find_package(Qt6 REQUIRED COMPONENTS Quick SerialPort)
-find_package(SDL3 REQUIRED)
+find_package(SDL2 REQUIRED CONFIG REQUIRED COMPONENTS SDL2)
 
 qt_standard_project_setup(REQUIRES 6.8)
 
@@ -18,7 +18,6 @@ qt_add_qml_module(appDroneDesktop
     VERSION 1.0
     QML_FILES
         Main.qml
-        DrawerButton.qml
     RESOURCES
         menuicon.png
         settings.png
@@ -51,7 +50,7 @@ set_target_properties(appDroneDesktop PROPERTIES
 )
 
 target_link_libraries(appDroneDesktop
-    PRIVATE Qt6::Quick Qt${QT_VERSION_MAJOR}::SerialPort SDL3::SDL3
+    PRIVATE Qt6::Quick Qt${QT_VERSION_MAJOR}::SerialPort SDL2::SDL2
 )
 
 include(GNUInstallDirs)

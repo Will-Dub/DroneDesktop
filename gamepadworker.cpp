@@ -1,24 +1,21 @@
 #include "gamepadworker.h"
 
-GamepadWorker::GamepadWorker(SDL_Gamepad *gamepad, QObject *parent)
+GamepadWorker::GamepadWorker(SDL_GameController *gameController, QObject *parent)
     : QObject(parent),
     m_pollTimer(new QTimer(this)),
-    m_gamepad(gamepad)
+    m_gameController(gameController)
 {
     qDebug() << "Gamepad worker: Constructor called";
-
     connect(m_pollTimer, &QTimer::timeout, this, [this]() {
-        if (m_gamepad) {
+        if (m_gameController) {
             qInfo() << "Read";
         }
-
         stopPolling();
         emit eventQuit();
     });
 
     // 30 hz
     m_pollTimer->setInterval(8);
-
     startPolling();
 }
 
