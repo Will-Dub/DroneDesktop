@@ -1,3 +1,4 @@
+#define SDL_MAIN_HANDLED
 #ifndef GAMEPADWORKER_H
 #define GAMEPADWORKER_H
 
