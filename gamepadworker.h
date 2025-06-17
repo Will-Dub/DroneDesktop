@@ -12,11 +12,19 @@ class GamepadWorker : public QObject
     Q_OBJECT
 
 public:
-    explicit GamepadWorker(SDL_GameController *gameController, QObject *parent = nullptr);
+    explicit GamepadWorker(QObject *parent = nullptr);
     ~GamepadWorker();
 
+public slots:
+    void connectToGamepad(int joystickId = 0);
+    void disconnectGamepad();
+    void pollGamepad();
+
 signals:
-    void eventQuit();
+    void gamepadConnectionStatusChanged(bool connected);
+    void buttonPressed(int button);
+    void buttonReleased(int button);
+    void axisChanged(int axis, int value);
 
 private:
     void startPolling();
@@ -24,7 +32,7 @@ private:
 
 private:
     QTimer *m_pollTimer;
-    SDL_GameController *m_gameController;
+    SDL_GameController *m_gameController = nullptr;
 };
 
 #endif // GAMEPADWORKER_H

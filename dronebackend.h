@@ -32,7 +32,7 @@ public:
 
     // Methods for QML
     Q_INVOKABLE bool connectToDrone(const QString &portName);
-    Q_INVOKABLE bool connectToGamepad(const int joystickId);
+    Q_INVOKABLE void connectToGamepad(int joystickId);
     Q_INVOKABLE void disconnectDrone();
     Q_INVOKABLE void disconnectGamepad();
     Q_INVOKABLE void sendDataTest();
@@ -50,16 +50,20 @@ signals:
     void doDisconnect();
     void doWriteData(const DataPacket &dataPacket);
 
+    // Signals to gamepad worker
+    void doGamepadConnect(int deviceIndex);
+    void doGamepadDisconnect();
+
 public slots:
     // Slots received from worker
-    void onConnectionStatusChanged(const bool is_connected);
+    void onConnectionStatusChanged(bool isConnected);
     void onStatusUpdate(const QString &newStatus);
     void onNewPacketReceived(const DataPacket &dataPacket);
     void onRefreshUsbDevices();
     void onRefreshGamepadDevices();
 
     // Slots received from gamepad worker
-    void onEventQuit();
+    void onGamepadConnectionStatusChanged(bool isConnected);
 
 private:
     QThread* m_usbThread = nullptr;
@@ -75,8 +79,8 @@ private:
     QVariantMap mapDeviceInfo(const QSerialPortInfo &portInfo);
     QVariantMap mapGamepadDeviceInfo(SDL_JoystickID joystickId);
 
-    bool m_is_connected = false;
-    bool m_is_gamepad_connected = false;
+    bool m_isConnected = false;
+    bool m_isGamepadConnected = false;
     QString m_status;
 
     static QString gamepadTypeToString(SDL_GameControllerType type);

@@ -11,7 +11,6 @@ DroneBackend::DroneBackend(QObject *parent) :
 
     // Usb worker
     m_usbWorker = new DroneWorker();
-
     m_usbThread = new QThread(this);
     m_usbWorker->moveToThread(m_usbThread);
 
@@ -22,7 +21,7 @@ DroneBackend::DroneBackend(QObject *parent) :
         qDebug() << "Worker thread started";
     });
 
-    // Connect backend to worker
+    // Backend to worker
     connect(this, &DroneBackend::doConnect,
             m_usbWorker, &DroneWorker::connectToDrone);
 
@@ -32,16 +31,40 @@ DroneBackend::DroneBackend(QObject *parent) :
     connect(this, &DroneBackend::doWriteData,
             m_usbWorker, &DroneWorker::writeData);
 
-    // Connect worker to backend
+    // Worker to backend
     connect(m_usbWorker, &DroneWorker::connectionStatusChanged,
             this, &DroneBackend::onConnectionStatusChanged);
 
     connect(m_usbWorker, &DroneWorker::newPacketReceived,
             this, &DroneBackend::onNewPacketReceived);
 
-    // Start the thread
     m_usbThread->start();
 
+    // Gamepad worker
+    m_gamepadWorker = new GamepadWorker();
+    m_gamepadThread = new QThread(this);
+    m_gamepadWorker->moveToThread(m_gamepadThread);
+
+    // Connect start and finish
+    connect(m_gamepadThread, &QThread::finished, m_gamepadWorker, &QObject::deleteLater);
+    connect(m_gamepadThread, &QThread::started, m_gamepadWorker, [this]() {
+        qDebug() << "Gamepad worker thread started";
+    });
+
+    // Backend to gamepadWorker
+    connect(this, &DroneBackend::doGamepadConnect,
+            m_gamepadWorker, &GamepadWorker::connectToGamepad);
+
+    connect(this, &DroneBackend::doGamepadDisconnect,
+            m_gamepadWorker, &GamepadWorker::disconnectGamepad);
+
+    // GamepadWorker to backend
+    connect(m_gamepadWorker, &GamepadWorker::gamepadConnectionStatusChanged,
+            this, &DroneBackend::onGamepadConnectionStatusChanged);
+
+    m_gamepadThread->start();
+
+    // Update the devices
     updateUsbDevices();
     updateGamepadDevices();
 }
@@ -54,27 +77,44 @@ DroneBackend::~DroneBackend(){
         m_usbThread->quit();
 
         if (!m_usbThread->wait(3000)) {
-            qWarning() << "DroneBackend: Worker thread failed to terminate, forcing termination";
+            qWarning() << "DroneBackend: Worker thread failed to terminate";
             m_usbThread->terminate();
             m_usbThread->wait();
         }
+
+        m_usbThread = nullptr;
+        m_usbWorker = nullptr;
+    }
+
+    if(m_gamepadWorker && m_gamepadThread){
+        // tell to quit and wait
+        m_gamepadThread->quit();
+
+        if (!m_gamepadThread->wait(3000)) {
+            qWarning() << "DroneBackend: Gamepad worker thread failed to terminate";
+            m_gamepadThread->terminate();
+            m_gamepadThread->wait(1000);
+        }
+
+        m_gamepadThread = nullptr;
+        m_gamepadWorker = nullptr;
     }
 }
 
 bool DroneBackend::isConnected() const
 {
-    return m_is_connected;
+    return m_isConnected;
 }
 
 bool DroneBackend::isGamepadConnected() const
 {
-    return m_is_gamepad_connected;
+    return m_isGamepadConnected;
 }
 
 void DroneBackend::setIsConnected(bool is_connected)
 {
-    if (m_is_connected != is_connected) {
-        m_is_connected = is_connected;
+    if (m_isConnected != is_connected) {
+        m_isConnected = is_connected;
         emit connectedChanged();
     }
 }
@@ -96,78 +136,43 @@ QVariantList DroneBackend::gamepadDevices() const
 
 bool DroneBackend::connectToDrone(const QString& portName)
 {
-    if (!m_is_connected) {
+    if (!m_isConnected) {
         emit doConnect(portName);
         return true;
     }
     return false;
 }
 
-bool DroneBackend::connectToGamepad(const int joystickId)
+void DroneBackend::connectToGamepad(const int joystickId)
 {
-    if(m_is_gamepad_connected || m_gamepadWorker || m_gamepadThread){
-        disconnectGamepad();
-        return false;
+    if(m_isGamepadConnected){
+        qWarning() << "Gamepad already connected";
+        return;
     }
 
-    SDL_GameController *gameController = SDL_GameControllerOpen(joystickId);
-    if(gameController == nullptr){
-        qWarning() << "Error opening the gamepad";
-        return false;
-    }
-
-    m_gamepadWorker = new GamepadWorker(gameController);
-    m_gamepadThread = new QThread(this);
-    m_gamepadWorker->moveToThread(m_gamepadThread);
-
-    // Connect start and finish
-    connect(m_gamepadThread, &QThread::finished, m_gamepadWorker, &QObject::deleteLater);
-    connect(m_gamepadThread, &QThread::started, m_gamepadWorker, [this]() {
-        qDebug() << "Worker thread started";
-    });
-
-    // Connect worker signals to slots
-    connect(m_gamepadWorker, &GamepadWorker::eventQuit, this, &DroneBackend::onEventQuit);
-    m_gamepadThread->start();
-    m_is_gamepad_connected = true;
-    emit gamepadConnectedChanged();
-    return true;
+    emit doGamepadConnect(joystickId);
 }
 
 void DroneBackend::disconnectDrone()
 {
-    if(m_is_connected){
+    if(m_isConnected){
         emit doDisconnect();
     }
 }
 
 void DroneBackend::disconnectGamepad()
 {
-    if (!m_is_gamepad_connected || !m_gamepadWorker || !m_gamepadThread) {
+    if (!m_isGamepadConnected) {
+        qWarning() << "No gamepad connected";
         return;
     }
 
-    // Stop the worker thread
-    m_gamepadThread->quit();
-
-    // Wait for thread to finish
-    if (!m_gamepadThread->wait(3000)) {
-        qWarning() << "Gamepad thread did not finish within timeout";
-        m_gamepadThread->terminate();
-        m_gamepadThread->wait(1000);
-    }
-
-    m_gamepadThread = nullptr;
-    m_gamepadWorker = nullptr;
-    m_is_gamepad_connected = false;
-    emit gamepadConnectedChanged();
-
-    qDebug() << "Gamepad disconnected successfully";
+    emit doGamepadDisconnect();
 }
 
 void DroneBackend::sendDataTest()
 {
-    if(!m_is_connected){
+    if(!m_isConnected){
         qDebug() << "DroneBackend: Send data got called but the connection is closed";
         return;
     }
@@ -176,9 +181,9 @@ void DroneBackend::sendDataTest()
     emit doWriteData(test);
 }
 
-void DroneBackend::onConnectionStatusChanged(const bool is_connected)
+void DroneBackend::onConnectionStatusChanged(const bool isConnected)
 {
-    if(is_connected){
+    if(isConnected){
         DataPacket startPacket{1,1,DataPacketType::START,{}};
         emit doWriteData(startPacket);
 
@@ -189,8 +194,8 @@ void DroneBackend::onConnectionStatusChanged(const bool is_connected)
         emit doWriteData(startPacket);
     }
 
-    qDebug() << "DroneBackend: Connection status changed to " << is_connected;
-    setIsConnected(is_connected);
+    qDebug() << "DroneBackend: Connection status changed to " << isConnected;
+    setIsConnected(isConnected);
 }
 
 void DroneBackend::onStatusUpdate(const QString &newStatus)
@@ -203,14 +208,14 @@ void DroneBackend::onStatusUpdate(const QString &newStatus)
 
 void DroneBackend::onNewPacketReceived(const DataPacket &dataPacket)
 {
-    qInfo() << "_____________________________";
-    qInfo() << "Data packet received";
-    qInfo() << "Data size: " << dataPacket.m_header.dataSize;
-    qInfo() << "Packet id: " << dataPacket.m_header.packetId;
-    qInfo() << "Drone id: " << dataPacket.m_header.droneId;
-    qInfo() << "Type: " << dataPacket.m_header.type;
-    qInfo() << "Data: " << dataPacket.m_data;
-    qInfo() << "_____________________________";
+    qDebug() << "_____________________________";
+    qDebug() << "Data packet received";
+    qDebug() << "Data size: " << dataPacket.m_header.dataSize;
+    qDebug() << "Packet id: " << dataPacket.m_header.packetId;
+    qDebug() << "Drone id: " << dataPacket.m_header.droneId;
+    qDebug() << "Type: " << dataPacket.m_header.type;
+    qDebug() << "Data: " << dataPacket.m_data;
+    qDebug() << "_____________________________";
 }
 
 void DroneBackend::onRefreshUsbDevices()
@@ -223,10 +228,10 @@ void DroneBackend::onRefreshGamepadDevices()
     updateGamepadDevices();
 }
 
-void DroneBackend::onEventQuit()
+void DroneBackend::onGamepadConnectionStatusChanged(bool isConnected)
 {
-    qInfo() << "Drone backend: Gamepad called event quit";
-    disconnectGamepad();
+    m_isGamepadConnected = isConnected;
+    emit gamepadConnectedChanged();
 }
 
 void DroneBackend::updateUsbDevices()

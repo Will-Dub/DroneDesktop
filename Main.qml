@@ -23,7 +23,7 @@ ApplicationWindow {
             anchors.fill: parent
 
             Label {
-                text: drone.connected ? "Disconnect" : "Connect"
+                text: drone.connected ? "Disconnect a usb device" : "Connect a udb device"
                 font.pixelSize: 30
                 font.bold: true
                 font.weight: Font.Medium
@@ -128,6 +128,22 @@ ApplicationWindow {
                                 parent.ListView.view.currentIndex = -1
                             }
                         }
+                    }
+                }
+
+                Rectangle {
+                    anchors.fill: parent
+                    visible: listViewUsbDevice.count === 0
+                    color: "#ffffff"
+                    border.color: "#bdc3c7"
+                    border.width: 1
+
+                    Text {
+                        anchors.centerIn: parent
+                        text: "No udb device connected"
+                        color: "#7f8c8d"
+                        font.pixelSize: 14
+                        font.italic: true
                     }
                 }
             }
@@ -337,6 +353,22 @@ ApplicationWindow {
                                 parent.ListView.view.currentIndex = -1
                             }
                         }
+                    }
+                }
+
+                Rectangle {
+                    anchors.fill: parent
+                    visible: listViewGamepadDevice.count === 0
+                    color: "#ffffff"
+                    border.color: "#bdc3c7"
+                    border.width: 1
+
+                    Text {
+                        anchors.centerIn: parent
+                        text: "No udb device connected"
+                        color: "#7f8c8d"
+                        font.pixelSize: 14
+                        font.italic: true
                     }
                 }
             }
@@ -567,7 +599,7 @@ ApplicationWindow {
                             Layout.leftMargin: 16
                         }
                         Label{
-                            text: drone.connected ? "Disconnect" : "Connect"
+                            text: drone.gamepadConnected ? "Disconnect" : "Connect"
                             font.pixelSize: 24
                             font.bold: true
                             color: "white"
