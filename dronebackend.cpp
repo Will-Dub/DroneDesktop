@@ -2,8 +2,6 @@
 
 DroneBackend::DroneBackend(QObject *parent) :
     QObject(parent),
-    m_is_connected(false),
-    m_is_gamepad_connected(false),
     m_status("Disconnected")
 {
     // Init sdl3
@@ -44,8 +42,8 @@ DroneBackend::DroneBackend(QObject *parent) :
     // Start the thread
     m_usbThread->start();
 
-    // Update the list of usb device connected
     updateUsbDevices();
+    updateGamepadDevices();
 }
 
 DroneBackend::~DroneBackend(){

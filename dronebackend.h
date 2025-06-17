@@ -62,10 +62,10 @@ public slots:
     void onEventQuit();
 
 private:
-    QThread* m_usbThread;
-    DroneWorker* m_usbWorker;
-    QThread* m_gamepadThread;
-    GamepadWorker* m_gamepadWorker;
+    QThread* m_usbThread = nullptr;
+    DroneWorker* m_usbWorker = nullptr;
+    QThread* m_gamepadThread = nullptr;
+    GamepadWorker* m_gamepadWorker = nullptr;
 
     QVariantList m_usbDevices;
     QVariantList m_gamepadDevices;
@@ -75,8 +75,8 @@ private:
     QVariantMap mapDeviceInfo(const QSerialPortInfo &portInfo);
     QVariantMap mapGamepadDeviceInfo(SDL_JoystickID joystickId);
 
-    bool m_is_connected;
-    bool m_is_gamepad_connected;
+    bool m_is_connected = false;
+    bool m_is_gamepad_connected = false;
     QString m_status;
 
     static QString gamepadTypeToString(SDL_GameControllerType type);
