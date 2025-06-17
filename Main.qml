@@ -240,7 +240,7 @@ ApplicationWindow {
             anchors.fill: parent
 
             Label {
-                text: drone.connected ? "Disconnect a gamepad" : "Connect a gamepad"
+                text: drone.gamepadConnected ? "Disconnect a gamepad" : "Connect a gamepad"
                 font.pixelSize: 30
                 font.bold: true
                 font.weight: Font.Medium
