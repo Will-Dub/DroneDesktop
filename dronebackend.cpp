@@ -1,6 +1,11 @@
 #include "dronebackend.h"
 
-DroneBackend::DroneBackend(QObject *parent) : QObject(parent), m_is_connected(false), m_status("Disconnected") {
+DroneBackend::DroneBackend(QObject *parent) :
+    QObject(parent),
+    m_is_connected(false),
+    m_is_gamepad_connected(false),
+    m_status("Disconnected")
+{
     // Init sdl3
     if (SDL_Init(SDL_INIT_GAMECONTROLLER | SDL_INIT_EVENTS) < 0) {
         qCritical() << "SDL_Init Error: " << SDL_GetError();
