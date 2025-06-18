@@ -106,14 +106,17 @@ ApplicationWindow {
                         DataColumn {
                             width: 200
                             text: modelData.systemLocation || "N/A"
+                            textColor: "#2c3e50"
                         }
                         DataColumn {
                             width: 150
                             text: modelData.manufacturer || "N/A"
+                            textColor: "#2c3e50"
                         }
                         DataColumn {
                             width: 120
                             text: modelData.serialNumber || "N/A"
+                            textColor: "#2c3e50"
                         }
                     }
 
@@ -274,7 +277,7 @@ ApplicationWindow {
                 }
             }
 
-            // List of usb devices
+            // List of gamepad devices
             ListView {
                 id: listViewGamepadDevice
 
@@ -300,7 +303,7 @@ ApplicationWindow {
 
                         HeaderColumn {
                             width: 100
-                            text: "Id"
+                            text: "GUID"
                         }
                         HeaderColumn {
                             width: 200
@@ -317,7 +320,7 @@ ApplicationWindow {
                     width: ListView.view.width
                     height: 40
 
-                    color: ListView.isCurrentItem ? "#3498db" : (gamepadMouseArea.containsMouse ? "#ecf0f1" : "#ffffff")
+                    color: modelData.isConnected ? "#5de37a" : ListView.isCurrentItem ? "#3498db" : (gamepadMouseArea.containsMouse ? "#ecf0f1" : "#ffffff")
                     border.color: ListView.isCurrentItem ? "#2980b9" : "#bdc3c7"
                     border.width: 1
 
@@ -328,17 +331,19 @@ ApplicationWindow {
 
                         DataColumn {
                             width: 100
-                            text: modelData.id || "N/A"
+                            text: modelData.guid || "N/A"
                             bold: true
                             textColor: "#2c3e50"
                         }
                         DataColumn {
                             width: 200
                             text: modelData.name || "N/A"
+                            textColor: "#2c3e50"
                         }
                         DataColumn {
                             width: 150
                             text: modelData.type || "N/A"
+                            textColor: "#2c3e50"
                         }
                     }
 

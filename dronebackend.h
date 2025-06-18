@@ -7,7 +7,6 @@
 #include <QThread>
 #include <QDebug>
 #include <QVariantList>
-#include <SDL2/SDL.h>
 
 class DroneBackend : public QObject
 {
@@ -53,6 +52,7 @@ signals:
     // Signals to gamepad worker
     void doGamepadConnect(int deviceIndex);
     void doGamepadDisconnect();
+    void doRefreshGamepadList();
 
 public slots:
     // Slots received from worker
@@ -64,6 +64,7 @@ public slots:
 
     // Slots received from gamepad worker
     void onGamepadConnectionStatusChanged(bool isConnected);
+    void onGamepadListChanged(const QList<GamepadInfo>& gamepads);
 
 private:
     QThread* m_usbThread = nullptr;
@@ -75,9 +76,8 @@ private:
     QVariantList m_gamepadDevices;
 
     void updateUsbDevices();
-    void updateGamepadDevices();
     QVariantMap mapDeviceInfo(const QSerialPortInfo &portInfo);
-    QVariantMap mapGamepadDeviceInfo(SDL_JoystickID joystickId);
+    QVariantMap mapGamepadDeviceInfo(const GamepadInfo& gamepadInfo);
 
     bool m_isConnected = false;
     bool m_isGamepadConnected = false;
