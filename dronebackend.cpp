@@ -63,6 +63,15 @@ DroneBackend::DroneBackend(QObject *parent) :
     connect(m_gamepadWorker, &GamepadWorker::gamepadListChanged,
             this, &DroneBackend::onGamepadListChanged);
 
+    connect(m_gamepadWorker, &GamepadWorker::buttonPressed,
+            this, &DroneBackend::onButtonPressed);
+
+    connect(m_gamepadWorker, &GamepadWorker::buttonReleased,
+            this, &DroneBackend::onButtonReleased);
+
+    connect(m_gamepadWorker, &GamepadWorker::axisChanged,
+            this, &DroneBackend::onAxisChanged);
+
     m_gamepadThread->start();
 
     emit doRefreshGamepadList();
@@ -246,6 +255,21 @@ void DroneBackend::onGamepadListChanged(const QList<GamepadInfo> &gamepads)
     m_gamepadDevices = newGamepadsList;
     emit gamepadDevicesChanged();
     qDebug() << "Gamepad devices updated. Found" << m_gamepadDevices.size() << "devices";
+}
+
+void DroneBackend::onButtonPressed(int button)
+{
+    qDebug() << "Drone backend: Button pressed " << button;
+}
+
+void DroneBackend::onButtonReleased(int button)
+{
+    qDebug() << "Drone backend: Button released " << button;
+}
+
+void DroneBackend::onAxisChanged(int axis, int value)
+{
+    qDebug() << "Drone backend: Axis " << axis << " changed " << value;
 }
 
 void DroneBackend::updateUsbDevices()

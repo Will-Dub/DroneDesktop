@@ -23,7 +23,7 @@ ApplicationWindow {
             anchors.fill: parent
 
             Label {
-                text: drone.connected ? "Disconnect a usb device" : "Connect a udb device"
+                text: drone.connected ? "Disconnect a usb device" : "Connect a usb device"
                 font.pixelSize: 30
                 font.bold: true
                 font.weight: Font.Medium
@@ -246,6 +246,7 @@ ApplicationWindow {
         }
     }
 
+    // Connect gamepad popup
     Popup {
         id: gamepadPopup
         anchors.centerIn: parent
@@ -267,13 +268,30 @@ ApplicationWindow {
                 horizontalAlignment: Text.AlignHCenter
             }
 
-            // Refresh btn
-            Button{
-                icon.source: "refresh.png"
-                icon.width: 24
-                icon.height: 24
-                onClicked: {
-                    drone.onRefreshGamepadDevices()
+            // Action buttons
+            RowLayout{
+                Layout.fillWidth: true
+
+                // Refresh btn
+                Button{
+                    icon.source: "refresh.png"
+                    icon.width: 24
+                    icon.height: 24
+                    visible: !drone.gamepadConnected
+                    onClicked: {
+                        drone.onRefreshGamepadDevices()
+                    }
+                }
+
+                // Gamepad setup
+                Button{
+                    icon.source: "settings.png"
+                    icon.width: 24
+                    icon.height: 24
+                    visible: drone.gamepadConnected
+                    onClicked: {
+                        gamepadSetupPopup.open()
+                    }
                 }
             }
 
@@ -469,6 +487,192 @@ ApplicationWindow {
                         const response = drone.sendDataTest();
                     }
                 }*/
+            }
+        }
+    }
+
+    // Gamepad setup popup
+    Popup {
+        id: gamepadSetupPopup
+        anchors.centerIn: parent
+        width: window.width / 2
+        height: window.height / 2
+        modal: true
+        focus: true
+        closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutside
+
+        ColumnLayout{
+            anchors.fill: parent
+
+            Label {
+                text: "Setup a gamepad"
+                font.pixelSize: 30
+                font.bold: true
+                font.weight: Font.Medium
+                Layout.fillWidth: true
+                horizontalAlignment: Text.AlignHCenter
+            }
+
+            // Processed input
+            Pane{
+                Layout.fillWidth: true
+
+                ColumnLayout{
+                    anchors.fill: parent
+
+                    Label {
+                        text: "Processed input"
+                        font.pixelSize: 20
+                        font.bold: true
+                        font.weight: Font.Medium
+                    }
+
+                    RowLayout {
+                        Layout.fillWidth: true
+
+                        Repeater {
+                            model: 12
+
+                            RadioButton {
+                                id: gamepadButton
+                                text: index.toString()
+                                checked: true
+                                enabled: false
+                            }
+                        }
+                    }
+
+                    GridLayout{
+                        Layout.fillWidth: true
+                        Layout.fillHeight: true
+                        columns: 2
+                        rows: 2
+
+                        Repeater {
+                            model: 4
+
+                            delegate: ColumnLayout {
+                                Layout.fillWidth: true
+
+                                Label {
+                                    text: "Axis " + index
+                                }
+
+                                Slider {
+                                    id: slider
+                                    Layout.fillWidth: true
+                                    from: 0
+                                    to: 100
+                                    value: 50
+                                    enabled: false
+                                }
+
+                                Label {
+                                    text: Math.round(slider.value) + "%"
+                                    font.pixelSize: 12
+                                    Layout.alignment: Qt.AlignHCenter
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Edit processing
+            Pane{
+                Layout.fillWidth: true
+                ColumnLayout{
+                    Layout.fillWidth: parent
+
+                    Label {
+                        text: "Edit processing"
+                        font.pixelSize: 20
+                        font.bold: true
+                        font.weight: Font.Medium
+                    }
+
+                    RowLayout{
+                        ColumnLayout{
+                            Label{
+                                text: "Maximum percent"
+                            }
+
+                            TextField {
+                                id: gamepadMaxPercentField
+                                placeholderText: "0–100"
+                                inputMethodHints: Qt.ImhDigitsOnly
+                                text: "100"
+
+                                validator: IntValidator {
+                                    bottom: 0
+                                    top: 100
+                                }
+
+                                onEditingFinished: {
+                                    if (text === "") {
+                                        text = "0"
+                                        return
+                                    }
+
+                                    var num = parseInt(text)
+                                    if (isNaN(num)) {
+                                        text = "0"
+                                        return
+                                    }
+
+                                    if (num < 0) {
+                                        text = "0"
+                                    } else if (num > 100) {
+                                        text = "100"
+                                    }
+
+                                    focus = false
+
+                                    console.log("Valid value:", text)
+                                }
+
+                                onActiveFocusChanged: {
+                                    if (activeFocus) {
+                                        selectAll()
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Layout filler
+            Item{
+                Layout.fillHeight: true
+            }
+
+            // Bottom action row
+            RowLayout {
+                Layout.alignment: Qt.AlignHCenter
+
+                Button {
+                    Layout.preferredWidth: 100
+                    Layout.preferredHeight: 40
+                    text: "Back"
+                    font.bold: true
+                    font.pixelSize: 24
+                    background: Rectangle {
+                        color: parent.pressed ? "#302f2f" : (parent.hovered ? "#525252" : "#757575")
+                        radius: 4
+                        border.width: parent.visualFocus ? 2 : 1
+                        border.color: parent.visualFocus ? "#242424" : (parent.hovered ? "#525252" : "transparent")
+                        Behavior on color {
+                            ColorAnimation { duration: 150 }
+                        }
+                        Behavior on border.color {
+                            ColorAnimation { duration: 150 }
+                        }
+                    }
+                    onClicked: {
+                        gamepadSetupPopup.close();
+                    }
+                }
             }
         }
     }

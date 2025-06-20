@@ -102,21 +102,18 @@ void GamepadWorker::pollGamepad()
         switch (event.type) {
         case SDL_CONTROLLERBUTTONDOWN:
             if (event.cbutton.which == SDL_JoystickInstanceID(SDL_GameControllerGetJoystick(m_gameController))) {
-                qDebug() << "Gamepad Worker: Button down " << event.cbutton.button;
                 emit buttonPressed(event.cbutton.button);
             }
             break;
 
         case SDL_CONTROLLERBUTTONUP:
             if (event.cbutton.which == SDL_JoystickInstanceID(SDL_GameControllerGetJoystick(m_gameController))) {
-                qDebug() << "Gamepad Worker: Button up " << event.cbutton.button;
                 emit buttonReleased(event.cbutton.button);
             }
             break;
 
         case SDL_CONTROLLERAXISMOTION:
             if (event.caxis.which == SDL_JoystickInstanceID(SDL_GameControllerGetJoystick(m_gameController))) {
-                qDebug() << "Gamepad Worker: Axis motion " << event.caxis.axis << " " << event.caxis.value;
                 emit axisChanged(event.caxis.axis, event.caxis.value);
             }
             break;

@@ -65,6 +65,9 @@ public slots:
     // Slots received from gamepad worker
     void onGamepadConnectionStatusChanged(bool isConnected);
     void onGamepadListChanged(const QList<GamepadInfo>& gamepads);
+    void onButtonPressed(int button);
+    void onButtonReleased(int button);
+    void onAxisChanged(int axis, int value);
 
 private:
     QThread* m_usbThread = nullptr;
@@ -78,6 +81,9 @@ private:
     void updateUsbDevices();
     QVariantMap mapDeviceInfo(const QSerialPortInfo &portInfo);
     QVariantMap mapGamepadDeviceInfo(const GamepadInfo& gamepadInfo);
+
+    QList<int> gamepadAxisValue;
+    QList<bool> gamepadButtonValue;
 
     bool m_isConnected = false;
     bool m_isGamepadConnected = false;
