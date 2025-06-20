@@ -139,6 +139,13 @@ void GamepadWorker::refreshGamepadList()
     updateGamepadList();
 }
 
+void GamepadWorker::gamepadAutoconnect()
+{
+    if(m_availableGamepads.size() >= 1){
+        connectToGamepad(0);
+    }
+}
+
 void GamepadWorker::initializeSDL()
 {
     if (SDL_Init(SDL_INIT_GAMECONTROLLER) < 0) {

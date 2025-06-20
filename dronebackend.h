@@ -7,15 +7,20 @@
 #include <QThread>
 #include <QDebug>
 #include <QVariantList>
+#include <QSettings>
 
 class DroneBackend : public QObject
 {
+    const int DEADZONE = 8000;
+
     Q_OBJECT
     Q_PROPERTY(bool connected READ isConnected NOTIFY connectedChanged)
     Q_PROPERTY(bool gamepadConnected READ isGamepadConnected NOTIFY gamepadConnectedChanged)
     Q_PROPERTY(QString status READ status NOTIFY statusChanged)
     Q_PROPERTY(QVariantList usbDevices READ usbDevices NOTIFY usbDevicesChanged)
     Q_PROPERTY(QVariantList gamepadDevices READ gamepadDevices NOTIFY gamepadDevicesChanged)
+    Q_PROPERTY(QVariantList gamepadAxisInput READ gamepadAxisInput NOTIFY gamepadAxisInputChanged)
+    Q_PROPERTY(QVariantList gamepadButtonInput READ gamepadButtonInput NOTIFY gamepadButtonInputChanged)
 
 public:
     explicit DroneBackend(QObject* parent = nullptr);
@@ -28,6 +33,8 @@ public:
     QString status() const;
     QVariantList usbDevices() const;
     QVariantList gamepadDevices() const;
+    QVariantList gamepadAxisInput() const;
+    QVariantList gamepadButtonInput() const;
 
     // Methods for QML
     Q_INVOKABLE bool connectToDrone(const QString &portName);
@@ -43,6 +50,8 @@ signals:
     void statusChanged();
     void usbDevicesChanged();
     void gamepadDevicesChanged();
+    void gamepadAxisInputChanged();
+    void gamepadButtonInputChanged();
 
     // Signals to worker
     void doConnect(const QString& portName);
@@ -82,8 +91,8 @@ private:
     QVariantMap mapDeviceInfo(const QSerialPortInfo &portInfo);
     QVariantMap mapGamepadDeviceInfo(const GamepadInfo& gamepadInfo);
 
-    QList<int> gamepadAxisValue;
-    QList<bool> gamepadButtonValue;
+    QList<int> m_gamepadAxisInput;
+    QList<bool> m_gamepadButtonInput;
 
     bool m_isConnected = false;
     bool m_isGamepadConnected = false;

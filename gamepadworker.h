@@ -33,6 +33,7 @@ public slots:
     void connectToGamepad(int joystickId = 0);
     void disconnectGamepad();
     void refreshGamepadList();
+    void gamepadAutoconnect();
 
 private slots:
     void pollGamepad();

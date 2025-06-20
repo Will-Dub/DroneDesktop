@@ -531,11 +531,12 @@ ApplicationWindow {
                         Layout.fillWidth: true
 
                         Repeater {
-                            model: 12
+                            model: 16
 
                             RadioButton {
                                 id: gamepadButton
                                 text: index.toString()
+                                visible: drone.gamepadButtonInput[index] === true
                                 checked: true
                                 enabled: false
                             }
@@ -549,7 +550,7 @@ ApplicationWindow {
                         rows: 2
 
                         Repeater {
-                            model: 4
+                            model: 6
 
                             delegate: ColumnLayout {
                                 Layout.fillWidth: true
@@ -561,9 +562,9 @@ ApplicationWindow {
                                 Slider {
                                     id: slider
                                     Layout.fillWidth: true
-                                    from: 0
+                                    from: -100
                                     to: 100
-                                    value: 50
+                                    value: drone.gamepadAxisInput[index]
                                     enabled: false
                                 }
 

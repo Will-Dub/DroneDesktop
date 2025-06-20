@@ -2,7 +2,9 @@
 
 DroneBackend::DroneBackend(QObject *parent) :
     QObject(parent),
-    m_status("Disconnected")
+    m_status("Disconnected"),
+    m_gamepadAxisInput(6), // 0-5
+    m_gamepadButtonInput(16) // 0-15
 {
     // Usb worker
     m_usbWorker = new DroneWorker();
@@ -56,6 +58,9 @@ DroneBackend::DroneBackend(QObject *parent) :
     connect(this, &DroneBackend::doRefreshGamepadList,
             m_gamepadWorker, &GamepadWorker::refreshGamepadList);
 
+    connect(this, &DroneBackend::doGamepadAutoconnect,
+            m_gamepadWorker, &GamepadWorker::gamepadAutoconnect);
+
     // GamepadWorker to backend
     connect(m_gamepadWorker, &GamepadWorker::gamepadConnectionStatusChanged,
             this, &DroneBackend::onGamepadConnectionStatusChanged);
@@ -73,11 +78,21 @@ DroneBackend::DroneBackend(QObject *parent) :
             this, &DroneBackend::onAxisChanged);
 
     m_gamepadThread->start();
-
     emit doRefreshGamepadList();
 
     // Update the devices
     updateUsbDevices();
+
+    // Set previous configuration
+    QSettings settings;
+
+    //settings.setValue("test", 12);
+    bool gamepadAutoconnect = settings.value("gamepadAutoconnect").toBool();
+    m_maxGamepadAxisPercentage = settings.value("gamepadAutoconnect").toInt();
+
+    if(gamepadAutoconnect){
+        emit doGamepadAutoconnect();
+    }
 }
 
 DroneBackend::~DroneBackend(){
@@ -143,6 +158,24 @@ QVariantList DroneBackend::usbDevices() const
 QVariantList DroneBackend::gamepadDevices() const
 {
     return m_gamepadDevices;
+}
+
+QVariantList DroneBackend::gamepadAxisInput() const
+{
+    QVariantList variantList;
+    for (int value : m_gamepadAxisInput)
+        variantList.append(value);
+
+    return variantList;
+}
+
+QVariantList DroneBackend::gamepadButtonInput() const
+{
+    QVariantList variantList;
+    for (bool value : m_gamepadButtonInput)
+        variantList.append(value);
+
+    return variantList;
 }
 
 bool DroneBackend::connectToDrone(const QString& portName)
@@ -259,17 +292,46 @@ void DroneBackend::onGamepadListChanged(const QList<GamepadInfo> &gamepads)
 
 void DroneBackend::onButtonPressed(int button)
 {
-    qDebug() << "Drone backend: Button pressed " << button;
+    if(button >= m_gamepadButtonInput.size()){
+        qCritical() << "Drone backend: Button id " << button << " outside the allocated range";
+        return;
+    }
+
+    m_gamepadButtonInput[button] = true;
+    emit gamepadButtonInputChanged();
 }
 
 void DroneBackend::onButtonReleased(int button)
 {
-    qDebug() << "Drone backend: Button released " << button;
+    if(button >= m_gamepadButtonInput.size()){
+        qCritical() << "Drone backend: Button id " << button << " outside the allocated range";
+        return;
+    }
+
+    m_gamepadButtonInput[button] = false;
+    emit gamepadButtonInputChanged();
 }
 
 void DroneBackend::onAxisChanged(int axis, int value)
 {
-    qDebug() << "Drone backend: Axis " << axis << " changed " << value;
+    float processedValue = 0.0f;
+
+    if(axis >= m_gamepadAxisInput.size()){
+        qCritical() << "Drone backend: Axis id outside the allocated range";
+        return;
+    }
+
+    // Outside the deadzone
+    if (abs(value) >= DEADZONE) {
+        if (value > 0) {
+            processedValue = (value - DEADZONE) / (32767.0f - DEADZONE);
+        } else {
+            processedValue = (value + DEADZONE) / (32767.0f - DEADZONE);
+        }
+    }
+
+    m_gamepadAxisInput[axis] = processedValue * 100.0f;
+    emit gamepadAxisInputChanged();
 }
 
 void DroneBackend::updateUsbDevices()
