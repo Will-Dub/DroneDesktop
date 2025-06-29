@@ -43,6 +43,10 @@ public:
     Q_INVOKABLE void disconnectGamepad();
     Q_INVOKABLE void sendDataTest();
 
+    // Setting change
+    Q_INVOKABLE void setGamepadAutoConnect(bool gamepadAutoconnect);
+    Q_INVOKABLE void setMaxGamepadAxisPercentage(int maxGamepadAxisPercentage);
+
 signals:
     // Signals for property change
     void connectedChanged();
@@ -62,6 +66,7 @@ signals:
     void doGamepadConnect(int deviceIndex);
     void doGamepadDisconnect();
     void doRefreshGamepadList();
+    void doGamepadAutoconnect();
 
 public slots:
     // Slots received from worker
@@ -94,9 +99,10 @@ private:
     QList<int> m_gamepadAxisInput;
     QList<bool> m_gamepadButtonInput;
 
+    QString m_status;
     bool m_isConnected = false;
     bool m_isGamepadConnected = false;
-    QString m_status;
+    int m_maxGamepadAxisPercentage = 100;
 
     static QString gamepadTypeToString(SDL_GameControllerType type);
 };

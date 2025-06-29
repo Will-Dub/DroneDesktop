@@ -86,9 +86,8 @@ DroneBackend::DroneBackend(QObject *parent) :
     // Set previous configuration
     QSettings settings;
 
-    //settings.setValue("test", 12);
     bool gamepadAutoconnect = settings.value("gamepadAutoconnect").toBool();
-    m_maxGamepadAxisPercentage = settings.value("gamepadAutoconnect").toInt();
+    m_maxGamepadAxisPercentage = settings.value("maxGamepadAxisPercentage", 100).toInt();
 
     if(gamepadAutoconnect){
         emit doGamepadAutoconnect();
@@ -225,6 +224,30 @@ void DroneBackend::sendDataTest()
     emit doWriteData(test);
 }
 
+void DroneBackend::setGamepadAutoConnect(bool gamepadAutoconnect)
+{
+    QSettings settings;
+
+    settings.setValue("gamepadAutoconnect", gamepadAutoconnect);
+
+    if(gamepadAutoconnect){
+        emit doGamepadAutoconnect();
+    }
+}
+
+void DroneBackend::setMaxGamepadAxisPercentage(int maxGamepadAxisPercentage)
+{
+    if (maxGamepadAxisPercentage < 0 || maxGamepadAxisPercentage > 100) {
+        return;
+    }
+
+    m_maxGamepadAxisPercentage = maxGamepadAxisPercentage;
+
+    QSettings settings;
+
+    settings.setValue("maxGamepadAxisPercentage", m_maxGamepadAxisPercentage);
+}
+
 void DroneBackend::onConnectionStatusChanged(const bool isConnected)
 {
     if(isConnected){
@@ -314,7 +337,7 @@ void DroneBackend::onButtonReleased(int button)
 
 void DroneBackend::onAxisChanged(int axis, int value)
 {
-    float processedValue = 0.0f;
+    float processedValue = 0;
 
     if(axis >= m_gamepadAxisInput.size()){
         qCritical() << "Drone backend: Axis id outside the allocated range";
@@ -330,7 +353,11 @@ void DroneBackend::onAxisChanged(int axis, int value)
         }
     }
 
-    m_gamepadAxisInput[axis] = processedValue * 100.0f;
+    processedValue = processedValue * 100.0f;
+    processedValue = qMin(processedValue, static_cast<float>(m_maxGamepadAxisPercentage));
+    processedValue = qMax(processedValue, static_cast<float>(-m_maxGamepadAxisPercentage));
+
+    m_gamepadAxisInput[axis] = processedValue;
     emit gamepadAxisInputChanged();
 }
 
