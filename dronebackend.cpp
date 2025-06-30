@@ -7,7 +7,7 @@ DroneBackend::DroneBackend(QObject *parent) :
     m_gamepadButtonInput(16) // 0-15
 {
     // Usb worker
-    m_usbWorker = new DroneWorker();
+    m_usbWorker = new UsbWorker();
     m_usbThread = new QThread(this);
     m_usbWorker->moveToThread(m_usbThread);
 
@@ -20,19 +20,19 @@ DroneBackend::DroneBackend(QObject *parent) :
 
     // Backend to worker
     connect(this, &DroneBackend::doConnect,
-            m_usbWorker, &DroneWorker::connectToDrone);
+            m_usbWorker, &UsbWorker::connectToUsb);
 
     connect(this, &DroneBackend::doDisconnect,
-            m_usbWorker, &DroneWorker::disconnectDrone);
+            m_usbWorker, &UsbWorker::disconnectUsb);
 
     connect(this, &DroneBackend::doWriteData,
-            m_usbWorker, &DroneWorker::writeData);
+            m_usbWorker, &UsbWorker::writeData);
 
     // Worker to backend
-    connect(m_usbWorker, &DroneWorker::connectionStatusChanged,
+    connect(m_usbWorker, &UsbWorker::connectionStatusChanged,
             this, &DroneBackend::onConnectionStatusChanged);
 
-    connect(m_usbWorker, &DroneWorker::newPacketReceived,
+    connect(m_usbWorker, &UsbWorker::newPacketReceived,
             this, &DroneBackend::onNewPacketReceived);
 
     m_usbThread->start();
@@ -187,14 +187,14 @@ bool DroneBackend::isUsbAutoConnect() const
 {
     QSettings settings;
 
-    return settings.value("isUsbAutoConnect").toBool();
+    return settings.value("isUsbAutoConnect", false).toBool();
 }
 
 bool DroneBackend::isGamepadAutoConnect() const
 {
     QSettings settings;
 
-    return settings.value("isGamepadAutoConnect").toBool();
+    return settings.value("isGamepadAutoConnect", false).toBool();
 }
 
 int DroneBackend::maxGamepadAxisPercentage() const
@@ -202,7 +202,7 @@ int DroneBackend::maxGamepadAxisPercentage() const
     return m_maxGamepadAxisPercentage;
 }
 
-bool DroneBackend::connectToDrone(const QString& portName)
+bool DroneBackend::connectToUsb(const QString& portName)
 {
     if (!m_isConnected) {
         emit doConnect(portName);
@@ -221,7 +221,7 @@ void DroneBackend::connectToGamepad(const int joystickId)
     emit doGamepadConnect(joystickId);
 }
 
-void DroneBackend::disconnectDrone()
+void DroneBackend::disconnectUsb()
 {
     if(m_isConnected){
         emit doDisconnect();

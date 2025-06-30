@@ -33,7 +33,7 @@ qt_add_qml_module(appDroneDesktop
         QML_FILES DataColumn.qml
         QML_FILES HeaderColumn.qml
         SOURCES dronebackend.h dronebackend.cpp
-        SOURCES droneworker.h droneworker.cpp
+        SOURCES usbworker.h usbworker.cpp
         SOURCES datapacket.h datapacket.cpp
         SOURCES gamepadworker.h gamepadworker.cpp
 )

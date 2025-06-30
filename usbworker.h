@@ -1,5 +1,5 @@
-#ifndef DRONEWORKER_H
-#define DRONEWORKER_H
+#ifndef USBWORKER_H
+#define USBWORKER_H
 
 #include <QObject>
 #include <QThread>
@@ -8,12 +8,12 @@
 #include <QSerialPortInfo>
 #include "datapacket.h"
 
-class DroneWorker : public QObject
+class UsbWorker : public QObject
 {
     Q_OBJECT
 public:
-    explicit DroneWorker(QObject* parent = nullptr);
-    ~DroneWorker();
+    explicit UsbWorker(QObject* parent = nullptr);
+    ~UsbWorker();
 
     void stopWorking();
 
@@ -21,8 +21,8 @@ private:
     void processReadBuffer();
 
 public slots:
-    void connectToDrone(const QString &portName);
-    void disconnectDrone();
+    void connectToUsb(const QString &portName);
+    void disconnectUsb();
     void writeData(const DataPacket& dataPacket);
 
 private slots:
@@ -39,4 +39,4 @@ private:
     QByteArray m_recvBuffer;
 };
 
-#endif // DRONEWORKER_H
+#endif // USBWORKER_H

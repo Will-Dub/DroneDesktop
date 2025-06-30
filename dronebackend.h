@@ -2,7 +2,7 @@
 #define DRONEBACKEND_H
 
 #include <QObject>
-#include "droneworker.h"
+#include "usbworker.h"
 #include "gamepadworker.h"
 #include <QThread>
 #include <QDebug>
@@ -21,8 +21,8 @@ class DroneBackend : public QObject
     Q_PROPERTY(QVariantList gamepadDevices READ gamepadDevices NOTIFY gamepadDevicesChanged)
     Q_PROPERTY(QVariantList gamepadAxisInput READ gamepadAxisInput NOTIFY gamepadAxisInputChanged)
     Q_PROPERTY(QVariantList gamepadButtonInput READ gamepadButtonInput NOTIFY gamepadButtonInputChanged)
-    Q_PROPERTY(bool isUsbAutoConnect READ isUsbAutoConnect WRITE setIsGamepadAutoConnect NOTIFY isGamepadAutoConnectChanged)
-    Q_PROPERTY(bool isGamepadAutoConnect READ isGamepadAutoConnect WRITE setIsUsbAutoConnect NOTIFY isUsbAutoConnectChanged)
+    Q_PROPERTY(bool isUsbAutoConnect READ isUsbAutoConnect WRITE setIsUsbAutoConnect NOTIFY isUsbAutoConnectChanged)
+    Q_PROPERTY(bool isGamepadAutoConnect READ isGamepadAutoConnect WRITE setIsGamepadAutoConnect NOTIFY isGamepadAutoConnectChanged)
     Q_PROPERTY(int maxGamepadAxisPercentage READ maxGamepadAxisPercentage WRITE setMaxGamepadAxisPercentage NOTIFY maxGamepadAxisPercentageChanged)
 
 public:
@@ -43,9 +43,9 @@ public:
     int maxGamepadAxisPercentage() const;
 
     // Methods for QML
-    Q_INVOKABLE bool connectToDrone(const QString &portName);
+    Q_INVOKABLE bool connectToUsb(const QString &portName);
     Q_INVOKABLE void connectToGamepad(int joystickId);
-    Q_INVOKABLE void disconnectDrone();
+    Q_INVOKABLE void disconnectUsb();
     Q_INVOKABLE void disconnectGamepad();
     Q_INVOKABLE void sendDataTest();
 
@@ -96,7 +96,7 @@ public slots:
 
 private:
     QThread* m_usbThread = nullptr;
-    DroneWorker* m_usbWorker = nullptr;
+    UsbWorker* m_usbWorker = nullptr;
     QThread* m_gamepadThread = nullptr;
     GamepadWorker* m_gamepadWorker = nullptr;
 

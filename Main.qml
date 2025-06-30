@@ -48,8 +48,11 @@ ApplicationWindow {
                 }
 
                 CheckBox {
-                    checked: drone.isUsbAutoConnect
                     text: "Autoconnect usb on start"
+
+                    Component.onCompleted: {
+                        checked = drone.isUsbAutoConnect
+                    }
 
                     onCheckedChanged: {
                         drone.isUsbAutoConnect = checked
@@ -221,7 +224,7 @@ ApplicationWindow {
 
                         if (index >= 0) {
                             const portName = listViewUsbDevice.model[index].portName;
-                            drone.connectToDrone(portName);
+                            drone.connectToUsb(portName);
                         }
                     }
                 }
@@ -247,7 +250,7 @@ ApplicationWindow {
                         }
                     }
                     onClicked: {
-                        const response = drone.disconnectDrone();
+                        const response = drone.disconnectUsb();
                     }
                 }
 
@@ -316,8 +319,11 @@ ApplicationWindow {
                 }
 
                 CheckBox {
-                    checked: drone.isGamepadAutoConnect
                     text: "Autoconnect gamepad on start"
+
+                    Component.onCompleted: {
+                        checked = drone.isGamepadAutoConnect
+                    }
 
                     onCheckedChanged: {
                         drone.isGamepadAutoConnect = checked
