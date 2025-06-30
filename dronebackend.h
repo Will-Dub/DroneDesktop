@@ -21,6 +21,9 @@ class DroneBackend : public QObject
     Q_PROPERTY(QVariantList gamepadDevices READ gamepadDevices NOTIFY gamepadDevicesChanged)
     Q_PROPERTY(QVariantList gamepadAxisInput READ gamepadAxisInput NOTIFY gamepadAxisInputChanged)
     Q_PROPERTY(QVariantList gamepadButtonInput READ gamepadButtonInput NOTIFY gamepadButtonInputChanged)
+    Q_PROPERTY(bool isUsbAutoConnect READ isUsbAutoConnect WRITE setIsGamepadAutoConnect NOTIFY isGamepadAutoConnectChanged)
+    Q_PROPERTY(bool isGamepadAutoConnect READ isGamepadAutoConnect WRITE setIsUsbAutoConnect NOTIFY isUsbAutoConnectChanged)
+    Q_PROPERTY(int maxGamepadAxisPercentage READ maxGamepadAxisPercentage WRITE setMaxGamepadAxisPercentage NOTIFY maxGamepadAxisPercentageChanged)
 
 public:
     explicit DroneBackend(QObject* parent = nullptr);
@@ -35,6 +38,9 @@ public:
     QVariantList gamepadDevices() const;
     QVariantList gamepadAxisInput() const;
     QVariantList gamepadButtonInput() const;
+    bool isUsbAutoConnect() const;
+    bool isGamepadAutoConnect() const;
+    int maxGamepadAxisPercentage() const;
 
     // Methods for QML
     Q_INVOKABLE bool connectToDrone(const QString &portName);
@@ -44,8 +50,9 @@ public:
     Q_INVOKABLE void sendDataTest();
 
     // Setting change
-    Q_INVOKABLE void setGamepadAutoConnect(bool gamepadAutoconnect);
-    Q_INVOKABLE void setMaxGamepadAxisPercentage(int maxGamepadAxisPercentage);
+    void setIsUsbAutoConnect(bool isUsbAutoConnect);
+    void setIsGamepadAutoConnect(bool isGamepadAutoConnect);
+    void setMaxGamepadAxisPercentage(int maxGamepadAxisPercentage);
 
 signals:
     // Signals for property change
@@ -56,6 +63,9 @@ signals:
     void gamepadDevicesChanged();
     void gamepadAxisInputChanged();
     void gamepadButtonInputChanged();
+    void isUsbAutoConnectChanged();
+    void isGamepadAutoConnectChanged();
+    void maxGamepadAxisPercentageChanged();
 
     // Signals to worker
     void doConnect(const QString& portName);
@@ -66,6 +76,7 @@ signals:
     void doGamepadConnect(int deviceIndex);
     void doGamepadDisconnect();
     void doRefreshGamepadList();
+    void doUsbAutoconnect();
     void doGamepadAutoconnect();
 
 public slots:

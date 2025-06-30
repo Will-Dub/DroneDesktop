@@ -86,10 +86,16 @@ DroneBackend::DroneBackend(QObject *parent) :
     // Set previous configuration
     QSettings settings;
 
-    bool gamepadAutoconnect = settings.value("gamepadAutoconnect").toBool();
+    bool isUsbAutoConnect = settings.value("isUsbAutoConnect", false).toBool();
+    bool isGamepadAutoConnect = settings.value("isGamepadAutoConnect", false).toBool();
     m_maxGamepadAxisPercentage = settings.value("maxGamepadAxisPercentage", 100).toInt();
 
-    if(gamepadAutoconnect){
+    if(isUsbAutoConnect){
+        // TODO implement usb autoconnect
+        emit doUsbAutoconnect();
+    }
+
+    if(isGamepadAutoConnect){
         emit doGamepadAutoconnect();
     }
 }
@@ -177,6 +183,25 @@ QVariantList DroneBackend::gamepadButtonInput() const
     return variantList;
 }
 
+bool DroneBackend::isUsbAutoConnect() const
+{
+    QSettings settings;
+
+    return settings.value("isUsbAutoConnect").toBool();
+}
+
+bool DroneBackend::isGamepadAutoConnect() const
+{
+    QSettings settings;
+
+    return settings.value("isGamepadAutoConnect").toBool();
+}
+
+int DroneBackend::maxGamepadAxisPercentage() const
+{
+    return m_maxGamepadAxisPercentage;
+}
+
 bool DroneBackend::connectToDrone(const QString& portName)
 {
     if (!m_isConnected) {
@@ -224,15 +249,22 @@ void DroneBackend::sendDataTest()
     emit doWriteData(test);
 }
 
-void DroneBackend::setGamepadAutoConnect(bool gamepadAutoconnect)
+void DroneBackend::setIsUsbAutoConnect(bool isUsbAutoConnect)
 {
     QSettings settings;
 
-    settings.setValue("gamepadAutoconnect", gamepadAutoconnect);
+    settings.setValue("isUsbAutoconnect", isUsbAutoConnect);
 
-    if(gamepadAutoconnect){
-        emit doGamepadAutoconnect();
-    }
+    emit isUsbAutoConnectChanged();
+}
+
+void DroneBackend::setIsGamepadAutoConnect(bool isGamepadAutoConnect)
+{
+    QSettings settings;
+
+    settings.setValue("isGamepadAutoconnect", isGamepadAutoConnect);
+
+    emit isGamepadAutoConnectChanged();
 }
 
 void DroneBackend::setMaxGamepadAxisPercentage(int maxGamepadAxisPercentage)
@@ -246,6 +278,8 @@ void DroneBackend::setMaxGamepadAxisPercentage(int maxGamepadAxisPercentage)
     QSettings settings;
 
     settings.setValue("maxGamepadAxisPercentage", m_maxGamepadAxisPercentage);
+
+    emit maxGamepadAxisPercentageChanged();
 }
 
 void DroneBackend::onConnectionStatusChanged(const bool isConnected)

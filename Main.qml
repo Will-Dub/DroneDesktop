@@ -31,13 +31,29 @@ ApplicationWindow {
                 horizontalAlignment: Text.AlignHCenter
             }
 
-            // Refresh btn
-            Button{
-                icon.source: "refresh.png"
-                icon.width: 24
-                icon.height: 24
-                onClicked: {
-                    drone.onRefreshUsbDevices()
+            RowLayout{
+                // Refresh btn
+                Button{
+                    icon.source: "refresh.png"
+                    icon.width: 24
+                    icon.height: 24
+                    onClicked: {
+                        drone.onRefreshUsbDevices()
+                    }
+                }
+
+                // Filler
+                Item{
+                    Layout.fillWidth: true
+                }
+
+                CheckBox {
+                    checked: drone.isUsbAutoConnect
+                    text: "Autoconnect usb on start"
+
+                    onCheckedChanged: {
+                        drone.isUsbAutoConnect = checked
+                    }
                 }
             }
 
@@ -291,6 +307,20 @@ ApplicationWindow {
                     visible: drone.gamepadConnected
                     onClicked: {
                         gamepadSetupPopup.open()
+                    }
+                }
+
+                // Filler
+                Item{
+                    Layout.fillWidth: true
+                }
+
+                CheckBox {
+                    checked: drone.isGamepadAutoConnect
+                    text: "Autoconnect gamepad on start"
+
+                    onCheckedChanged: {
+                        drone.isGamepadAutoConnect = checked
                     }
                 }
             }
@@ -599,10 +629,10 @@ ApplicationWindow {
                             }
 
                             TextField {
-                                id: gamepadMaxPercentField
+                                id: maxGamepadAxisPercentageTextField
                                 placeholderText: "0–100"
                                 inputMethodHints: Qt.ImhDigitsOnly
-                                text: "100"
+                                text: drone.maxGamepadAxisPercentage
 
                                 validator: IntValidator {
                                     bottom: 0
@@ -629,7 +659,7 @@ ApplicationWindow {
 
                                     focus = false
 
-                                    console.log("Valid value:", text)
+                                    drone.maxGamepadAxisPercentage = num
                                 }
 
                                 onActiveFocusChanged: {
