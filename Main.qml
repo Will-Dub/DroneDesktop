@@ -162,7 +162,7 @@ ApplicationWindow {
 
                     Text {
                         anchors.centerIn: parent
-                        text: "No udb device connected"
+                        text: "No usb device connected"
                         color: "#7f8c8d"
                         font.pixelSize: 14
                         font.italic: true

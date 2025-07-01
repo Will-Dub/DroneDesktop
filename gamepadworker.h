@@ -32,7 +32,7 @@ public:
 public slots:
     void connectToGamepad(int joystickId = 0);
     void disconnectGamepad();
-    void refreshGamepadList();
+    void gamepadRefreshList();
     void gamepadAutoconnect();
 
 private slots:
@@ -50,7 +50,6 @@ private:
     void cleanupSDL();
     void startPolling();
     void stopPolling();
-    void updateGamepadList();
     QString gamepadTypeToString(SDL_GameControllerType type);
 
 private:

@@ -83,6 +83,25 @@ void UsbWorker::handleError(QSerialPort::SerialPortError error) {
     emit connectionStatusChanged(false);
 }
 
+bool UsbWorker::isUsbConnected(const QSerialPortInfo &serialPortInfo)
+{
+    if(!m_serialPort || !m_serialPort->isOpen()){
+        return false;
+    }
+
+    QSerialPortInfo info(*m_serialPort);
+
+    if (info.isNull()) {
+        return false;
+    }
+
+    if(info.serialNumber() != serialPortInfo.serialNumber()){
+        return false;
+    }
+
+    return true;
+}
+
 void UsbWorker::writeData(const DataPacket &dataPacket)
 {
     if(!m_serialPort->isOpen()){
@@ -103,5 +122,55 @@ void UsbWorker::writeData(const DataPacket &dataPacket)
     }
 
     m_serialPort->flush();
+}
 
+void UsbWorker::usbRefreshList()
+{
+    QList<UsbInfo> newList;
+    const auto serialPortInfoList = QSerialPortInfo::availablePorts();
+
+    for (const QSerialPortInfo &serialPortInfo : serialPortInfoList) {
+        UsbInfo info;
+        info.portName = serialPortInfo.portName();
+        info.systemLocation = serialPortInfo.systemLocation();
+        info.manufacturer = serialPortInfo.manufacturer();
+        info.serialNumber = serialPortInfo.serialNumber();
+        info.isConnected = isUsbConnected(serialPortInfo);
+
+        newList.append(info);
+    }
+
+    if(newList.size() != m_availableUsb.size()){
+        m_availableUsb = newList;
+        emit usbListChanged(m_availableUsb);
+    } else {
+        // Check if any gamepad changed
+        bool changed = false;
+        for (int i = 0; i < newList.size(); ++i) {
+            if (i >= m_availableUsb.size() ||
+                newList[i].serialNumber != m_availableUsb[i].serialNumber ||
+                newList[i].isConnected != m_availableUsb[i].isConnected) {
+                changed = true;
+                break;
+            }
+        }
+
+        if (changed) {
+            m_availableUsb = newList;
+            emit usbListChanged(m_availableUsb);
+        }
+    }
+}
+
+void UsbWorker::usbAutoconnect()
+{
+    const auto serialPortInfos = QSerialPortInfo::availablePorts();
+
+    if(!serialPortInfos.empty()){
+        const auto name = serialPortInfos.first().portName();
+        connectToUsb(name);
+    }
+    else{
+        qDebug() << "UsbWorker: No device connected, cannot autoconnect";
+    }
 }

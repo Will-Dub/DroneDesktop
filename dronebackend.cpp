@@ -19,23 +19,33 @@ DroneBackend::DroneBackend(QObject *parent) :
     });
 
     // Backend to worker
-    connect(this, &DroneBackend::doConnect,
+    connect(this, &DroneBackend::doUsbConnect,
             m_usbWorker, &UsbWorker::connectToUsb);
 
-    connect(this, &DroneBackend::doDisconnect,
+    connect(this, &DroneBackend::doUsbDisconnect,
             m_usbWorker, &UsbWorker::disconnectUsb);
 
-    connect(this, &DroneBackend::doWriteData,
+    connect(this, &DroneBackend::doUsbWriteData,
             m_usbWorker, &UsbWorker::writeData);
+
+    connect(this, &DroneBackend::doUsbRefreshList,
+            m_usbWorker, &UsbWorker::usbRefreshList);
+
+    connect(this, &DroneBackend::doUsbAutoconnect,
+            m_usbWorker, &UsbWorker::usbAutoconnect);
 
     // Worker to backend
     connect(m_usbWorker, &UsbWorker::connectionStatusChanged,
             this, &DroneBackend::onConnectionStatusChanged);
 
+    connect(m_usbWorker, &UsbWorker::usbListChanged,
+            this, &DroneBackend::onUsbListChanged);
+
     connect(m_usbWorker, &UsbWorker::newPacketReceived,
             this, &DroneBackend::onNewPacketReceived);
 
     m_usbThread->start();
+    emit doUsbRefreshList();
 
     // Gamepad worker
     m_gamepadWorker = new GamepadWorker();
@@ -55,8 +65,8 @@ DroneBackend::DroneBackend(QObject *parent) :
     connect(this, &DroneBackend::doGamepadDisconnect,
             m_gamepadWorker, &GamepadWorker::disconnectGamepad);
 
-    connect(this, &DroneBackend::doRefreshGamepadList,
-            m_gamepadWorker, &GamepadWorker::refreshGamepadList);
+    connect(this, &DroneBackend::doGamepadRefreshList,
+            m_gamepadWorker, &GamepadWorker::gamepadRefreshList);
 
     connect(this, &DroneBackend::doGamepadAutoconnect,
             m_gamepadWorker, &GamepadWorker::gamepadAutoconnect);
@@ -78,10 +88,7 @@ DroneBackend::DroneBackend(QObject *parent) :
             this, &DroneBackend::onAxisChanged);
 
     m_gamepadThread->start();
-    emit doRefreshGamepadList();
-
-    // Update the devices
-    updateUsbDevices();
+    emit doGamepadRefreshList();
 
     // Set previous configuration
     QSettings settings;
@@ -91,7 +98,6 @@ DroneBackend::DroneBackend(QObject *parent) :
     m_maxGamepadAxisPercentage = settings.value("maxGamepadAxisPercentage", 100).toInt();
 
     if(isUsbAutoConnect){
-        // TODO implement usb autoconnect
         emit doUsbAutoconnect();
     }
 
@@ -134,7 +140,7 @@ DroneBackend::~DroneBackend(){
 
 bool DroneBackend::isConnected() const
 {
-    return m_isConnected;
+    return m_isUsbConnected;
 }
 
 bool DroneBackend::isGamepadConnected() const
@@ -144,8 +150,8 @@ bool DroneBackend::isGamepadConnected() const
 
 void DroneBackend::setIsConnected(bool is_connected)
 {
-    if (m_isConnected != is_connected) {
-        m_isConnected = is_connected;
+    if (m_isUsbConnected != is_connected) {
+        m_isUsbConnected = is_connected;
         emit connectedChanged();
     }
 }
@@ -204,8 +210,8 @@ int DroneBackend::maxGamepadAxisPercentage() const
 
 bool DroneBackend::connectToUsb(const QString& portName)
 {
-    if (!m_isConnected) {
-        emit doConnect(portName);
+    if (!m_isUsbConnected) {
+        emit doUsbConnect(portName);
         return true;
     }
     return false;
@@ -223,8 +229,11 @@ void DroneBackend::connectToGamepad(const int joystickId)
 
 void DroneBackend::disconnectUsb()
 {
-    if(m_isConnected){
-        emit doDisconnect();
+    DataPacket endPacket{1,1,DataPacketType::STOP,{}};
+    emit doUsbWriteData(endPacket);
+
+    if(m_isUsbConnected){
+        emit doUsbDisconnect();
     }
 }
 
@@ -240,13 +249,13 @@ void DroneBackend::disconnectGamepad()
 
 void DroneBackend::sendDataTest()
 {
-    if(!m_isConnected){
+    if(!m_isUsbConnected){
         qDebug() << "DroneBackend: Send data got called but the connection is closed";
         return;
     }
 
     DataPacket test{1,1,DataPacketType::START,{}};
-    emit doWriteData(test);
+    emit doUsbWriteData(test);
 }
 
 void DroneBackend::setIsUsbAutoConnect(bool isUsbAutoConnect)
@@ -286,17 +295,27 @@ void DroneBackend::onConnectionStatusChanged(const bool isConnected)
 {
     if(isConnected){
         DataPacket startPacket{1,1,DataPacketType::START,{}};
-        emit doWriteData(startPacket);
+        emit doUsbWriteData(startPacket);
 
         DataPacket statusPacket{1,1,DataPacketType::STATUS,{}};
-        emit doWriteData(statusPacket);
-    }else{
-        DataPacket startPacket{1,1,DataPacketType::STOP,{}};
-        emit doWriteData(startPacket);
+        emit doUsbWriteData(statusPacket);
     }
 
     qDebug() << "DroneBackend: Connection status changed to " << isConnected;
     setIsConnected(isConnected);
+    emit doUsbRefreshList();
+}
+
+void DroneBackend::onUsbListChanged(const QList<UsbInfo> &usbs)
+{
+    QVariantList newUsbsList;
+    foreach (const UsbInfo &usbInfo, usbs) {
+        newUsbsList.append(mapUsbDeviceInfo(usbInfo));
+    }
+
+    m_usbDevices = newUsbsList;
+    emit usbDevicesChanged();
+    qDebug() << "Drone backend: Usb devices updated";
 }
 
 void DroneBackend::onStatusUpdate(const QString &newStatus)
@@ -321,12 +340,12 @@ void DroneBackend::onNewPacketReceived(const DataPacket &dataPacket)
 
 void DroneBackend::onRefreshUsbDevices()
 {
-    updateUsbDevices();
+    emit doUsbRefreshList();
 }
 
 void DroneBackend::onRefreshGamepadDevices()
 {
-    emit doRefreshGamepadList();
+    emit doGamepadRefreshList();
 }
 
 void DroneBackend::onGamepadConnectionStatusChanged(bool isConnected)
@@ -344,7 +363,7 @@ void DroneBackend::onGamepadListChanged(const QList<GamepadInfo> &gamepads)
 
     m_gamepadDevices = newGamepadsList;
     emit gamepadDevicesChanged();
-    qDebug() << "Gamepad devices updated. Found" << m_gamepadDevices.size() << "devices";
+    qDebug() << "Drone backend: Gamepad devices updated";
 }
 
 void DroneBackend::onButtonPressed(int button)
@@ -395,42 +414,26 @@ void DroneBackend::onAxisChanged(int axis, int value)
     emit gamepadAxisInputChanged();
 }
 
-void DroneBackend::updateUsbDevices()
-{
-    QVariantList newDevices;
-
-    const auto serialPortInfos = QSerialPortInfo::availablePorts();
-
-    for (const QSerialPortInfo &portInfo : serialPortInfos) {
-        newDevices.append(mapDeviceInfo(portInfo));
-    }
-
-    if (newDevices != m_usbDevices) {
-        m_usbDevices = newDevices;
-        emit usbDevicesChanged();
-        qDebug() << "USB devices updated. Found" << m_usbDevices.size() << "devices";
-    }
-}
-
 QVariantMap DroneBackend::mapGamepadDeviceInfo(const GamepadInfo& gamepadInfo)
 {
-    QVariantMap deviceInfo;
-    deviceInfo["id"] = static_cast<int>(gamepadInfo.index);
-    deviceInfo["name"] = gamepadInfo.name;
-    deviceInfo["type"] = gamepadInfo.type;
-    deviceInfo["guid"] = gamepadInfo.guid;
-    deviceInfo["isConnected"] = gamepadInfo.isConnected;
-    return deviceInfo;
+    QVariantMap info;
+
+    info["id"] = static_cast<int>(gamepadInfo.index);
+    info["name"] = gamepadInfo.name;
+    info["type"] = gamepadInfo.type;
+    info["guid"] = gamepadInfo.guid;
+    info["isConnected"] = gamepadInfo.isConnected;
+    return info;
 }
 
-QVariantMap DroneBackend::mapDeviceInfo(const QSerialPortInfo &portInfo)
+QVariantMap DroneBackend::mapUsbDeviceInfo(const UsbInfo &portInfo)
 {
-    QVariantMap deviceInfo;
+    QVariantMap info;
 
-    deviceInfo["portName"] = portInfo.portName();
-    deviceInfo["systemLocation"] = portInfo.systemLocation();
-    deviceInfo["manufacturer"] = portInfo.manufacturer();
-    deviceInfo["serialNumber"] = portInfo.serialNumber();
+    info["portName"] = portInfo.portName;
+    info["systemLocation"] = portInfo.systemLocation;
+    info["manufacturer"] = portInfo.manufacturer;
+    info["serialNumber"] = portInfo.serialNumber;
 
-    return deviceInfo;
+    return info;
 }

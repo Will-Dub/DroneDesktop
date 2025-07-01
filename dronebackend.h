@@ -67,25 +67,26 @@ signals:
     void isGamepadAutoConnectChanged();
     void maxGamepadAxisPercentageChanged();
 
-    // Signals to worker
-    void doConnect(const QString& portName);
-    void doDisconnect();
-    void doWriteData(const DataPacket &dataPacket);
+    // Signals to usb worker
+    void doUsbConnect(const QString& portName);
+    void doUsbDisconnect();
+    void doUsbWriteData(const DataPacket &dataPacket);
+    void doUsbRefreshList();
+    void doUsbAutoconnect();
 
     // Signals to gamepad worker
     void doGamepadConnect(int deviceIndex);
     void doGamepadDisconnect();
-    void doRefreshGamepadList();
-    void doUsbAutoconnect();
+    void doGamepadRefreshList();
     void doGamepadAutoconnect();
 
 public slots:
     // Slots received from worker
     void onConnectionStatusChanged(bool isConnected);
+    void onUsbListChanged(const QList<UsbInfo>& usbs);
     void onStatusUpdate(const QString &newStatus);
     void onNewPacketReceived(const DataPacket &dataPacket);
     void onRefreshUsbDevices();
-    void onRefreshGamepadDevices();
 
     // Slots received from gamepad worker
     void onGamepadConnectionStatusChanged(bool isConnected);
@@ -93,6 +94,7 @@ public slots:
     void onButtonPressed(int button);
     void onButtonReleased(int button);
     void onAxisChanged(int axis, int value);
+    void onRefreshGamepadDevices();
 
 private:
     QThread* m_usbThread = nullptr;
@@ -103,15 +105,14 @@ private:
     QVariantList m_usbDevices;
     QVariantList m_gamepadDevices;
 
-    void updateUsbDevices();
-    QVariantMap mapDeviceInfo(const QSerialPortInfo &portInfo);
+    QVariantMap mapUsbDeviceInfo(const UsbInfo& portInfo);
     QVariantMap mapGamepadDeviceInfo(const GamepadInfo& gamepadInfo);
 
     QList<int> m_gamepadAxisInput;
     QList<bool> m_gamepadButtonInput;
 
     QString m_status;
-    bool m_isConnected = false;
+    bool m_isUsbConnected = false;
     bool m_isGamepadConnected = false;
     int m_maxGamepadAxisPercentage = 100;
 

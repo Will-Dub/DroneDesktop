@@ -68,7 +68,7 @@ void GamepadWorker::connectToGamepad(int joystickId)
     }
 
     m_connectedGamepadIndex = joystickId;
-    updateGamepadList();
+    gamepadRefreshList();
     qDebug() << "Gamepad Worker: Gamepad connected";
 
     // Start the pooling
@@ -87,7 +87,7 @@ void GamepadWorker::disconnectGamepad()
     }
 
     m_connectedGamepadIndex = -1;
-    updateGamepadList();
+    gamepadRefreshList();
     emit gamepadConnectionStatusChanged(false);
 }
 
@@ -120,7 +120,7 @@ void GamepadWorker::pollGamepad()
 
         case SDL_CONTROLLERDEVICEADDED:
             qDebug() << "Gamepad Worker: Gamepad added";
-            updateGamepadList();
+            gamepadRefreshList();
             break;
 
         case SDL_CONTROLLERDEVICEREMOVED:
@@ -128,58 +128,13 @@ void GamepadWorker::pollGamepad()
                 qDebug() << "Gamepad Worker: Gamepad was disconnected";
                 disconnectGamepad();
             }
-            updateGamepadList();
+            gamepadRefreshList();
             break;
         }
     }
 }
 
-void GamepadWorker::refreshGamepadList()
-{
-    updateGamepadList();
-}
-
-void GamepadWorker::gamepadAutoconnect()
-{
-    if(m_availableGamepads.size() >= 1){
-        connectToGamepad(0);
-    }
-}
-
-void GamepadWorker::initializeSDL()
-{
-    if (SDL_Init(SDL_INIT_GAMECONTROLLER) < 0) {
-        qDebug() << "Gamepad Worker: Failed to initialize SDL" << SDL_GetError();
-        return;
-    }
-
-    m_sdlInitialized = true;
-    qDebug() << "Gamepad Worker: SDL initialized successfully";
-}
-
-void GamepadWorker::cleanupSDL()
-{
-    if (m_sdlInitialized) {
-        SDL_Quit();
-        m_sdlInitialized = false;
-    }
-}
-
-void GamepadWorker::startPolling()
-{
-    if (m_gameController && !m_pollTimer->isActive()){
-        m_pollTimer->start();
-    }
-}
-
-void GamepadWorker::stopPolling()
-{
-    if (m_pollTimer->isActive()){
-        m_pollTimer->stop();
-    }
-}
-
-void GamepadWorker::updateGamepadList()
+void GamepadWorker::gamepadRefreshList()
 {
     if (!m_sdlInitialized) {
         return;
@@ -230,6 +185,46 @@ void GamepadWorker::updateGamepadList()
             m_availableGamepads = newList;
             emit gamepadListChanged(m_availableGamepads);
         }
+    }
+}
+
+void GamepadWorker::gamepadAutoconnect()
+{
+    if(m_availableGamepads.size() >= 1){
+        connectToGamepad(0);
+    }
+}
+
+void GamepadWorker::initializeSDL()
+{
+    if (SDL_Init(SDL_INIT_GAMECONTROLLER) < 0) {
+        qDebug() << "Gamepad Worker: Failed to initialize SDL" << SDL_GetError();
+        return;
+    }
+
+    m_sdlInitialized = true;
+    qDebug() << "Gamepad Worker: SDL initialized successfully";
+}
+
+void GamepadWorker::cleanupSDL()
+{
+    if (m_sdlInitialized) {
+        SDL_Quit();
+        m_sdlInitialized = false;
+    }
+}
+
+void GamepadWorker::startPolling()
+{
+    if (m_gameController && !m_pollTimer->isActive()){
+        m_pollTimer->start();
+    }
+}
+
+void GamepadWorker::stopPolling()
+{
+    if (m_pollTimer->isActive()){
+        m_pollTimer->stop();
     }
 }
 
