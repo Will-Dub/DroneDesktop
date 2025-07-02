@@ -883,6 +883,12 @@ ApplicationWindow {
                         mouseArea.onClicked: stackView.currentItem.isVideoViewVisible = !stackView.currentItem.isVideoViewVisible
                         isOn: true
                     }
+
+                    SidebarCheckbox{
+                        labelText: "Logs"
+                        mouseArea.onClicked: stackView.currentItem.isLogViewVisible = !stackView.currentItem.isLogViewVisible
+                        isOn: true
+                    }
                 }
 
                 SidebarSection{
@@ -940,14 +946,10 @@ ApplicationWindow {
         id: dashboardPage
 
         RowLayout{
-            property alias gpsView: gpsView
-            property alias realTimeDataView: realTimeDataView
-            property alias videoView: videoView
-            property alias calibrationViewVisible: calibrationViewVisible
-            property alias droneSettingsViewVisible: droneSettingsViewVisible
             property bool isGpsViewVisible: true
             property bool isRealTimeDataViewVisible: true
             property bool isVideoViewVisible: true
+            property bool isLogViewVisible: true
             property bool isCalibrationViewVisible: true
             property bool isDroneSettingsViewVisible: true
 
@@ -962,7 +964,6 @@ ApplicationWindow {
                 visible: isGpsViewVisible || isRealTimeDataViewVisible
 
                 DashboardGpsView {
-                    id: gpsView
                     Layout.preferredHeight: parent.height * 0.8
                     Layout.fillHeight: true
                     Layout.fillWidth: true
@@ -970,7 +971,6 @@ ApplicationWindow {
                 }
 
                 DashboardRealTimeDataView {
-                    id: realTimeDataView
                     Layout.preferredHeight: parent.height * 0.2
                     Layout.fillHeight: true
                     Layout.fillWidth: true
@@ -982,28 +982,31 @@ ApplicationWindow {
                 Layout.fillHeight: true
                 Layout.fillWidth: true
                 spacing: 0
-                visible: isVideoViewVisible || isCalibrationViewVisible || isDroneSettingsViewVisible
+                visible: isVideoViewVisible || isCalibrationViewVisible || isDroneSettingsViewVisible || isLogViewVisible
 
                 DashboardVideoView {
-                    id: videoView
                     Layout.preferredHeight: parent.height * 0.8
                     Layout.fillHeight: true
                     Layout.fillWidth: true
                     visible: isVideoViewVisible
                 }
                 DashboardVideoView {
-                    id: calibrationViewVisible
                     Layout.preferredHeight: parent.height * 0.8
                     Layout.fillHeight: true
                     Layout.fillWidth: true
                     visible: isCalibrationViewVisible
                 }
                 DashboardVideoView {
-                    id: droneSettingsViewVisible
                     Layout.preferredHeight: parent.height * 0.8
                     Layout.fillHeight: true
                     Layout.fillWidth: true
                     visible: isDroneSettingsViewVisible
+                }
+                DashboardLogView {
+                    Layout.preferredHeight: parent.height * 0.8
+                    Layout.fillHeight: true
+                    Layout.fillWidth: true
+                    visible: isLogViewVisible
                 }
             }
         }

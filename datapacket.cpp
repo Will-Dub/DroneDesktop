@@ -40,8 +40,8 @@ DataPacket DataPacket::deserialize(const QByteArray &rawData) {
     }
     return packet;
 }
+
 QByteArray DataPacket::serialize() const {
-    // TODO Utiliser const?
     QByteArray result;
 
     // Add header

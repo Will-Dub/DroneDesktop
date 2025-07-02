@@ -328,14 +328,33 @@ void DroneBackend::onStatusUpdate(const QString &newStatus)
 
 void DroneBackend::onNewPacketReceived(const DataPacket &dataPacket)
 {
-    qDebug() << "_____________________________";
-    qDebug() << "Data packet received";
-    qDebug() << "Data size: " << dataPacket.m_header.dataSize;
-    qDebug() << "Packet id: " << dataPacket.m_header.packetId;
-    qDebug() << "Drone id: " << dataPacket.m_header.droneId;
-    qDebug() << "Type: " << dataPacket.m_header.type;
-    qDebug() << "Data: " << dataPacket.m_data;
-    qDebug() << "_____________________________";
+    switch (dataPacket.m_header.type) {
+    case DataPacketType::STATUS: {
+        StatusData statusData;
+
+        if(!statusData.deserialize(dataPacket.m_data)){
+            qCritical() << "Drone Backend: Deserializing the status packet failed";
+            return;
+        }
+
+        qDebug() << "Drone Backend: Status data received";
+
+        break;
+    }
+    default:
+        qCritical() << "Drone Backend: Unhandled data packet type";
+
+        qDebug() << "_____________________________";
+        qDebug() << "Data packet received";
+        qDebug() << "Data size: " << dataPacket.m_header.dataSize;
+        qDebug() << "Packet id: " << dataPacket.m_header.packetId;
+        qDebug() << "Drone id: " << dataPacket.m_header.droneId;
+        qDebug() << "Type: " << dataPacket.m_header.type;
+        qDebug() << "Data: " << dataPacket.m_data;
+        qDebug() << "_____________________________";
+
+        break;
+    }
 }
 
 void DroneBackend::onRefreshUsbDevices()

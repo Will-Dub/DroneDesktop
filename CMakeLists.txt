@@ -36,6 +36,7 @@ qt_add_qml_module(appDroneDesktop
         SOURCES usbworker.h usbworker.cpp
         SOURCES datapacket.h datapacket.cpp
         SOURCES gamepadworker.h gamepadworker.cpp
+        QML_FILES DashboardLogView.qml
 )
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.

@@ -14,9 +14,51 @@ enum DataPacketType : uint8_t{
     GPS,
     STOP,
     STOP_SPECIFIC,
-    START,
+    START, // 10
     START_SPECIFIC,
     CHANGE_SPEED
+};
+
+struct StatusData {
+    bool uartZeroConnected = false;
+    bool uartGpsConnected = false;
+    bool i2cConnected = false;
+    bool loraConnected = false;
+    bool useMotor1 = false;
+    bool useMotor2 = false;
+    bool useMotor3 = false;
+    bool useMotor4 = false;
+    bool useMpu6050 = false;
+    bool useQmc5883l = false;
+    bool useGps = false;
+    bool useLog = false;
+    bool useMotorInformation = false;
+    bool maxMotorSpeed = false;
+
+    bool deserialize(const QByteArray& rawData) {
+        QString str = QString::fromUtf8(rawData);
+        QStringList parts = str.split(';', Qt::SkipEmptyParts);
+
+        if (parts.size() < 14)
+            return false;
+
+        uartZeroConnected = (parts[0] == "1");
+        uartGpsConnected = (parts[1] == "1");
+        i2cConnected = (parts[2] == "1");
+        loraConnected = (parts[3] == "1");
+        useMotor1 = (parts[4] == "1");
+        useMotor2 = (parts[5] == "1");
+        useMotor3 = (parts[6] == "1");
+        useMotor4 = (parts[7] == "1");
+        useMpu6050 = (parts[8] == "1");
+        useQmc5883l = (parts[9] == "1");
+        useGps = (parts[10] == "1");
+        useLog = (parts[11] == "1");
+        useMotorInformation = (parts[12] == "1");
+        maxMotorSpeed = (parts[13] == "1");
+
+        return true;
+    }
 };
 
 #pragma pack(push, 1) // No padding

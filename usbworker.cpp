@@ -26,11 +26,12 @@ void UsbWorker::processReadBuffer()
     DataPacket packet = DataPacket::deserialize(m_recvBuffer);
 
     if(packet.m_isValid){
-        // Shrink the buffer
+        // Shrink the recv buffer
         int totalPacketSize = sizeof(DataPacketHeader) + packet.m_header.dataSize;
         m_recvBuffer.remove(0, totalPacketSize);
 
         emit newPacketReceived(packet);
+
         processReadBuffer();
     }
 }
