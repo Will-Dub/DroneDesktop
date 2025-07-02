@@ -34,7 +34,6 @@ DataPacket DataPacket::deserialize(const QByteArray &rawData) {
 
         // Get the data
         if (rawData.size() > sizeof(DataPacketHeader)) {
-            // Shrink the recv buffer
             packet.m_data = rawData.mid(sizeof(DataPacketHeader), packet.m_header.dataSize);
             packet.m_isValid = true;
         }

@@ -297,7 +297,7 @@ void DroneBackend::onConnectionStatusChanged(const bool isConnected)
         DataPacket startPacket{1,1,DataPacketType::START,{}};
         emit doUsbWriteData(startPacket);
 
-        DataPacket statusPacket{1,1,DataPacketType::STATUS,{}};
+        DataPacket statusPacket{1,2,DataPacketType::STATUS,{}};
         emit doUsbWriteData(statusPacket);
     }
 
