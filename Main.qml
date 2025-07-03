@@ -985,26 +985,25 @@ ApplicationWindow {
                 visible: isVideoViewVisible || isCalibrationViewVisible || isDroneSettingsViewVisible || isLogViewVisible
 
                 DashboardVideoView {
-                    Layout.preferredHeight: parent.height * 0.8
                     Layout.fillHeight: true
                     Layout.fillWidth: true
                     visible: isVideoViewVisible
                 }
                 DashboardVideoView {
-                    Layout.preferredHeight: parent.height * 0.8
                     Layout.fillHeight: true
                     Layout.fillWidth: true
                     visible: isCalibrationViewVisible
                 }
                 DashboardVideoView {
-                    Layout.preferredHeight: parent.height * 0.8
                     Layout.fillHeight: true
                     Layout.fillWidth: true
                     visible: isDroneSettingsViewVisible
                 }
+
                 DashboardLogView {
-                    Layout.preferredHeight: parent.height * 0.8
-                    Layout.fillHeight: true
+                    messages: drone.logs;
+                    Layout.preferredHeight: 300
+                    Layout.fillHeight: false
                     Layout.fillWidth: true
                     visible: isLogViewVisible
                 }

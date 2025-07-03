@@ -8,6 +8,8 @@
 #include <QDebug>
 #include <QVariantList>
 #include <QSettings>
+#include <QAbstractListModel>
+#include "loglistmodel.h"
 
 class DroneBackend : public QObject
 {
@@ -21,6 +23,7 @@ class DroneBackend : public QObject
     Q_PROPERTY(QVariantList gamepadDevices READ gamepadDevices NOTIFY gamepadDevicesChanged)
     Q_PROPERTY(QVariantList gamepadAxisInput READ gamepadAxisInput NOTIFY gamepadAxisInputChanged)
     Q_PROPERTY(QVariantList gamepadButtonInput READ gamepadButtonInput NOTIFY gamepadButtonInputChanged)
+    Q_PROPERTY(LogListModel* logs READ logs NOTIFY logsChanged)
     Q_PROPERTY(bool isUsbAutoConnect READ isUsbAutoConnect WRITE setIsUsbAutoConnect NOTIFY isUsbAutoConnectChanged)
     Q_PROPERTY(bool isGamepadAutoConnect READ isGamepadAutoConnect WRITE setIsGamepadAutoConnect NOTIFY isGamepadAutoConnectChanged)
     Q_PROPERTY(int maxGamepadAxisPercentage READ maxGamepadAxisPercentage WRITE setMaxGamepadAxisPercentage NOTIFY maxGamepadAxisPercentageChanged)
@@ -38,6 +41,7 @@ public:
     QVariantList gamepadDevices() const;
     QVariantList gamepadAxisInput() const;
     QVariantList gamepadButtonInput() const;
+    LogListModel* logs();
     bool isUsbAutoConnect() const;
     bool isGamepadAutoConnect() const;
     int maxGamepadAxisPercentage() const;
@@ -63,6 +67,7 @@ signals:
     void gamepadDevicesChanged();
     void gamepadAxisInputChanged();
     void gamepadButtonInputChanged();
+    void logsChanged();
     void isUsbAutoConnectChanged();
     void isGamepadAutoConnectChanged();
     void maxGamepadAxisPercentageChanged();
@@ -107,6 +112,8 @@ private:
 
     QVariantMap mapUsbDeviceInfo(const UsbInfo& portInfo);
     QVariantMap mapGamepadDeviceInfo(const GamepadInfo& gamepadInfo);
+
+    LogListModel m_logs{};
 
     QList<int> m_gamepadAxisInput;
     QList<bool> m_gamepadButtonInput;

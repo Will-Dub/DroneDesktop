@@ -189,6 +189,11 @@ QVariantList DroneBackend::gamepadButtonInput() const
     return variantList;
 }
 
+LogListModel* DroneBackend::logs()
+{
+    return &m_logs;
+}
+
 bool DroneBackend::isUsbAutoConnect() const
 {
     QSettings settings;
@@ -364,6 +369,7 @@ void DroneBackend::onRefreshUsbDevices()
 
 void DroneBackend::onRefreshGamepadDevices()
 {
+    m_logs.addLog("TESTTTTTTT", 1);
     emit doGamepadRefreshList();
 }
 
