@@ -17,7 +17,6 @@ Item {
         }
 
         ScrollView {
-            id: scrollView
             anchors.fill: parent
 
             ScrollBar.vertical.policy: ScrollBar.AlwaysOn
@@ -52,9 +51,10 @@ Item {
                             width: parent.width
                             color: {
                                 switch (model.type) {
-                                    case 1: return "red"
-                                    case 2: return "blue"
-                                    case 3: return "green"
+                                    case 0: return "white" // INFO
+                                    case 1: return "orange" // WARNING
+                                    case 2: return "red" // ERROR
+                                    case 3: return "darkred" // CRITICAL
                                     default: return "white"
                                 }
                             }

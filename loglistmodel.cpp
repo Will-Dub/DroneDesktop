@@ -2,14 +2,7 @@
 
 LogListModel::LogListModel(QObject *parent)
     : QAbstractListModel{parent}
-{
-    addLog("Du c++Du c++Du c++Du c++Du c++Du c++Du c++Du c++Du c++Du c++Du c++Du c++Du c++Du c++Du c++Du c++Du c++Du c++Du c++Du c++Du c++Du c++Du c++Du c++Du c++Du c++Du c++Du c++Du c++Du c++Du c++Du c++Du c++Du c++Du c++Du c++Du c++Du c++Du c++Du c++Du c++Du c++Du c++Du c++Du c++", 0);
-    addLog("Du c++1", 1);
-    addLog("Du c++2", 2);
-    addLog("Du c++3", 3);
-    addLog("Du c++4", 4);
-    addLog("Du c++5", 5);
-}
+{}
 
 int LogListModel::rowCount(const QModelIndex &parent) const {
     Q_UNUSED(parent);

@@ -346,6 +346,15 @@ void DroneBackend::onNewPacketReceived(const DataPacket &dataPacket)
 
         break;
     }
+    case DataPacketType::LOG: {
+        QString str = QString::fromUtf8(dataPacket.m_data);
+        QStringList parts = str.split(';', Qt::SkipEmptyParts);
+
+        if (parts.size() < 2)
+            break;
+
+        m_logs.addLog(parts[1], parts[0].toInt());
+    }
     default:
         qCritical() << "Drone Backend: Unhandled data packet type";
 

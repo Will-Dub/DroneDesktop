@@ -903,18 +903,10 @@ ApplicationWindow {
                         mouseArea.onClicked: stackView.currentItem.isCalibrationViewVisible = !stackView.currentItem.isCalibrationViewVisible
                         isOn: true
                     }
-                }
 
-                SidebarSection{
-                    text: "Tools"
-                }
-
-                // Control section
-                ColumnLayout{
-                    spacing: 0
                     SidebarCheckbox{
-                        labelText: "Drone settings"
-                        mouseArea.onClicked: stackView.currentItem.isDroneSettingsViewVisible = !stackView.currentItem.isDroneSettingsViewVisible
+                        labelText: "Component Status"
+                        mouseArea.onClicked: stackView.currentItem.isStatusViewVisible = !stackView.currentItem.isStatusViewVisible
                         isOn: true
                     }
                 }
@@ -951,7 +943,7 @@ ApplicationWindow {
             property bool isVideoViewVisible: true
             property bool isLogViewVisible: true
             property bool isCalibrationViewVisible: true
-            property bool isDroneSettingsViewVisible: true
+            property bool isStatusViewVisible: true
 
             spacing: 0
 
@@ -982,7 +974,7 @@ ApplicationWindow {
                 Layout.fillHeight: true
                 Layout.fillWidth: true
                 spacing: 0
-                visible: isVideoViewVisible || isCalibrationViewVisible || isDroneSettingsViewVisible || isLogViewVisible
+                visible: isVideoViewVisible || isCalibrationViewVisible || isStatusViewVisible || isLogViewVisible
 
                 DashboardVideoView {
                     Layout.fillHeight: true
@@ -994,12 +986,11 @@ ApplicationWindow {
                     Layout.fillWidth: true
                     visible: isCalibrationViewVisible
                 }
-                DashboardVideoView {
+                DashboardStatusView {
                     Layout.fillHeight: true
                     Layout.fillWidth: true
-                    visible: isDroneSettingsViewVisible
+                    visible: isStatusViewVisible
                 }
-
                 DashboardLogView {
                     messages: drone.logs;
                     Layout.preferredHeight: 300
