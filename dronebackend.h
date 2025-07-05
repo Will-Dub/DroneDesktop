@@ -10,6 +10,7 @@
 #include <QSettings>
 #include <QAbstractListModel>
 #include "loglistmodel.h"
+#include "componentlistmodel.h"
 
 class DroneBackend : public QObject
 {
@@ -24,6 +25,7 @@ class DroneBackend : public QObject
     Q_PROPERTY(QVariantList gamepadAxisInput READ gamepadAxisInput NOTIFY gamepadAxisInputChanged)
     Q_PROPERTY(QVariantList gamepadButtonInput READ gamepadButtonInput NOTIFY gamepadButtonInputChanged)
     Q_PROPERTY(LogListModel* logs READ logs NOTIFY logsChanged)
+    Q_PROPERTY(ComponentListModel* components READ components NOTIFY componentsChanged)
     Q_PROPERTY(bool isUsbAutoConnect READ isUsbAutoConnect WRITE setIsUsbAutoConnect NOTIFY isUsbAutoConnectChanged)
     Q_PROPERTY(bool isGamepadAutoConnect READ isGamepadAutoConnect WRITE setIsGamepadAutoConnect NOTIFY isGamepadAutoConnectChanged)
     Q_PROPERTY(int maxGamepadAxisPercentage READ maxGamepadAxisPercentage WRITE setMaxGamepadAxisPercentage NOTIFY maxGamepadAxisPercentageChanged)
@@ -42,6 +44,7 @@ public:
     QVariantList gamepadAxisInput() const;
     QVariantList gamepadButtonInput() const;
     LogListModel* logs();
+    ComponentListModel* components();
     bool isUsbAutoConnect() const;
     bool isGamepadAutoConnect() const;
     int maxGamepadAxisPercentage() const;
@@ -51,7 +54,8 @@ public:
     Q_INVOKABLE void connectToGamepad(int joystickId);
     Q_INVOKABLE void disconnectUsb();
     Q_INVOKABLE void disconnectGamepad();
-    Q_INVOKABLE void sendDataTest();
+    Q_INVOKABLE void toggleComponentStatus(int index);
+    Q_INVOKABLE void refreshComponentStatus();
 
     // Setting change
     void setIsUsbAutoConnect(bool isUsbAutoConnect);
@@ -68,6 +72,7 @@ signals:
     void gamepadAxisInputChanged();
     void gamepadButtonInputChanged();
     void logsChanged();
+    void componentsChanged();
     void isUsbAutoConnectChanged();
     void isGamepadAutoConnectChanged();
     void maxGamepadAxisPercentageChanged();
@@ -114,6 +119,7 @@ private:
     QVariantMap mapGamepadDeviceInfo(const GamepadInfo& gamepadInfo);
 
     LogListModel m_logs{};
+    ComponentListModel m_components{};
 
     QList<int> m_gamepadAxisInput;
     QList<bool> m_gamepadButtonInput;

@@ -194,6 +194,11 @@ LogListModel* DroneBackend::logs()
     return &m_logs;
 }
 
+ComponentListModel *DroneBackend::components()
+{
+    return &m_components;
+}
+
 bool DroneBackend::isUsbAutoConnect() const
 {
     QSettings settings;
@@ -252,15 +257,25 @@ void DroneBackend::disconnectGamepad()
     emit doGamepadDisconnect();
 }
 
-void DroneBackend::sendDataTest()
+void DroneBackend::toggleComponentStatus(int index)
 {
-    if(!m_isUsbConnected){
-        qDebug() << "DroneBackend: Send data got called but the connection is closed";
-        return;
+    const Component& component = m_components.getComponent(index);
+
+    if(component.status == Status::OFF){
+        DataPacket startPacket{1,1,DataPacketType::START_SPECIFIC, component.value.toUtf8()};
+        emit doUsbWriteData(startPacket);
+    }else if(component.status == Status::ON){
+        DataPacket startPacket{1,1,DataPacketType::STOP_SPECIFIC, component.value.toUtf8()};
+        emit doUsbWriteData(startPacket);
     }
 
-    DataPacket test{1,1,DataPacketType::START,{}};
-    emit doUsbWriteData(test);
+    m_components.toggleStatus(index);
+}
+
+void DroneBackend::refreshComponentStatus()
+{
+    DataPacket startPacket{1,1,DataPacketType::STATUS,{}};
+    emit doUsbWriteData(startPacket);
 }
 
 void DroneBackend::setIsUsbAutoConnect(bool isUsbAutoConnect)

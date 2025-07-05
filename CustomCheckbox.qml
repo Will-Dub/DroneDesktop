@@ -4,11 +4,12 @@ import QtQuick.Layouts
 
 Item{
     id: root
-    required property string labelText
-    property alias checked: checkbox.checked
-    property alias enabled: checkbox.enabled
+    property string text
+    property var checkState
+    property bool isEnabled: true
+    property bool isTristate: false
 
-    signal toggled(bool checked)
+    signal clicked()
 
     RowLayout {
         anchors.fill: parent
@@ -16,8 +17,11 @@ Item{
         CheckBox {
             id: checkbox
             Layout.alignment: Qt.AlignVCenter
+            tristate: root.isTristate
+            enabled: isEnabled
+            checkState: root.checkState
 
-            onToggled: root.toggled(checked)
+            onClicked: root.clicked()
 
             indicator: Rectangle {
                 width: 20
@@ -37,6 +41,15 @@ Item{
                     color: "white"
                     visible: checkbox.checked
                 }
+
+                Rectangle {
+                    width: 8
+                    height: 4
+                    anchors.centerIn: parent
+                    radius: 2
+                    color: "gray"
+                    visible: checkbox.checkState == Qt.PartiallyChecked
+                }
             }
 
             Rectangle {
@@ -49,7 +62,8 @@ Item{
         }
 
         Label {
-            text: root.labelText
+            text: root.text
+            Layout.fillHeight: true
             color: root.enabled ? "#ffffff" : "#888888"
             font.family: "Arial"
             font.pixelSize: 14

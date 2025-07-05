@@ -906,7 +906,7 @@ ApplicationWindow {
 
                     SidebarCheckbox{
                         labelText: "Component Status"
-                        mouseArea.onClicked: stackView.currentItem.isStatusViewVisible = !stackView.currentItem.isStatusViewVisible
+                        mouseArea.onClicked: stackView.currentItem.isComponentViewVisible = !stackView.currentItem.isComponentViewVisible
                         isOn: true
                     }
                 }
@@ -943,7 +943,7 @@ ApplicationWindow {
             property bool isVideoViewVisible: true
             property bool isLogViewVisible: true
             property bool isCalibrationViewVisible: true
-            property bool isStatusViewVisible: true
+            property bool isComponentViewVisible: true
 
             spacing: 0
 
@@ -955,6 +955,7 @@ ApplicationWindow {
                 spacing: 0
                 visible: isGpsViewVisible || isRealTimeDataViewVisible
 
+                /*
                 DashboardGpsView {
                     Layout.preferredHeight: parent.height * 0.8
                     Layout.fillHeight: true
@@ -967,16 +968,16 @@ ApplicationWindow {
                     Layout.fillHeight: true
                     Layout.fillWidth: true
                     visible: isRealTimeDataViewVisible
-                }
+                }*/
             }
 
             ColumnLayout{
                 Layout.fillHeight: true
                 Layout.fillWidth: true
                 spacing: 0
-                visible: isVideoViewVisible || isCalibrationViewVisible || isStatusViewVisible || isLogViewVisible
+                visible: isVideoViewVisible || isCalibrationViewVisible || isComponentViewVisible || isLogViewVisible
 
-                DashboardVideoView {
+                /*DashboardVideoView {
                     Layout.fillHeight: true
                     Layout.fillWidth: true
                     visible: isVideoViewVisible
@@ -985,11 +986,19 @@ ApplicationWindow {
                     Layout.fillHeight: true
                     Layout.fillWidth: true
                     visible: isCalibrationViewVisible
-                }
-                DashboardStatusView {
+                }*/
+                DashboardComponentView {
+                    components: drone.components;
                     Layout.fillHeight: true
                     Layout.fillWidth: true
-                    visible: isStatusViewVisible
+                    visible: isComponentViewVisible
+                    isRefreshEnabled: drone.connected
+                    onToggleComponentStatus: function(index){
+                        drone.toggleComponentStatus(index)
+                    }
+                    onRefreshClicked: {
+                        drone.refreshComponentStatus()
+                    }
                 }
                 DashboardLogView {
                     messages: drone.logs;
