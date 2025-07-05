@@ -378,7 +378,6 @@ void DroneBackend::onRefreshUsbDevices()
 
 void DroneBackend::onRefreshGamepadDevices()
 {
-    m_logs.addLog("TESTTTTTTT", 1);
     emit doGamepadRefreshList();
 }
 

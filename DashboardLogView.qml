@@ -19,8 +19,6 @@ Item {
         ScrollView {
             anchors.fill: parent
 
-            ScrollBar.vertical.policy: ScrollBar.AlwaysOn
-
             onContentHeightChanged: {
                 if (contentHeight > height) {
                     ScrollBar.vertical.position = 1.0 - ScrollBar.vertical.size
