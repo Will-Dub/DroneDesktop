@@ -961,14 +961,14 @@ ApplicationWindow {
                     Layout.fillHeight: true
                     Layout.fillWidth: true
                     visible: isGpsViewVisible
-                }
+                }*/
 
                 DashboardRealTimeDataView {
                     Layout.preferredHeight: parent.height * 0.2
                     Layout.fillHeight: true
                     Layout.fillWidth: true
                     visible: isRealTimeDataViewVisible
-                }*/
+                }
             }
 
             ColumnLayout{

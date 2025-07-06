@@ -18,7 +18,7 @@ Item{
             id: checkbox
             Layout.alignment: Qt.AlignVCenter
             tristate: root.isTristate
-            enabled: isEnabled
+            enabled: root.isEnabled
             checkState: root.checkState
 
             onClicked: root.clicked()
@@ -27,8 +27,10 @@ Item{
                 width: 20
                 height: 20
                 radius: 4
-                color: checkbox.checked ? "#0078d4" : "#2d2d2d"
-                border.color: checkbox.checked ? "#0078d4" : "#555555"
+                color: checkbox.enabled
+                       ? (checkbox.checked ? "#0078d4" : "#2d2d2d")
+                       : (checkbox.checked ? "#8bc5f7" : "#9d9d9d")
+                border.color: !checkbox.enabled ? "#555555" : (checkbox.checked ? "#0078d4" : "#555555")
                 border.width: 2
                 opacity: checkbox.enabled ? 1.0 : 0.5
 
@@ -57,7 +59,7 @@ Item{
                 radius: checkbox.indicator.radius
                 z: 1
                 color: "#20ffffff"
-                visible: checkbox.hovered && !checkbox.checked && checkbox.enabled
+                visible: checkbox.hovered && checkbox.enabled
             }
         }
 

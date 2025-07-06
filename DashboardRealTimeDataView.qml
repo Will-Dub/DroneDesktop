@@ -14,28 +14,37 @@ Item {
             border.width: 1
         }
 
-        RowLayout{
+        ScrollView{
+            id: scrollview
             anchors.fill: parent
-            SingleDataView {
-                Layout.fillHeight: true
-                Layout.fillWidth: true
+            Layout.alignment: Qt.AlignLeft | Qt.AlignTop
+            clip: true
 
-                title: "Altitude"
-                value: "54321"
-            }
-            SingleDataView {
-                Layout.fillHeight: true
-                Layout.fillWidth: true
+            GridLayout{
+                width: scrollview.width
+                columns: Math.max(1, Math.floor(scrollview.width / 200))
 
-                title: "Battery"
-                value: "100%"
-            }
-            SingleDataView {
-                Layout.fillHeight: true
-                Layout.fillWidth: true
+                SingleDataView {
+                    Layout.preferredHeight: 100
+                    Layout.fillWidth: true
 
-                title: "Latitude"
-                value: "12345"
+                    title: "Altitude"
+                    value: "54321"
+                }
+                SingleDataView {
+                    Layout.preferredHeight: 100
+                    Layout.fillWidth: true
+
+                    title: "Battery"
+                    value: "100%"
+                }
+                SingleDataView {
+                    Layout.preferredHeight: 100
+                    Layout.fillWidth: true
+
+                    title: "Latitude"
+                    value: "12345"
+                }
             }
         }
     }
