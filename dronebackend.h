@@ -11,6 +11,7 @@
 #include <QAbstractListModel>
 #include "loglistmodel.h"
 #include "componentlistmodel.h"
+#include "realtimedatalistmodel.h"
 
 class DroneBackend : public QObject
 {
@@ -26,6 +27,7 @@ class DroneBackend : public QObject
     Q_PROPERTY(QVariantList gamepadButtonInput READ gamepadButtonInput NOTIFY gamepadButtonInputChanged)
     Q_PROPERTY(LogListModel* logs READ logs NOTIFY logsChanged)
     Q_PROPERTY(ComponentListModel* components READ components NOTIFY componentsChanged)
+    Q_PROPERTY(RealTimeDataListModel* realTimeDatas READ realTimeDatas NOTIFY realTimeDatasChanged)
     Q_PROPERTY(bool isUsbAutoConnect READ isUsbAutoConnect WRITE setIsUsbAutoConnect NOTIFY isUsbAutoConnectChanged)
     Q_PROPERTY(bool isGamepadAutoConnect READ isGamepadAutoConnect WRITE setIsGamepadAutoConnect NOTIFY isGamepadAutoConnectChanged)
     Q_PROPERTY(int maxGamepadAxisPercentage READ maxGamepadAxisPercentage WRITE setMaxGamepadAxisPercentage NOTIFY maxGamepadAxisPercentageChanged)
@@ -45,6 +47,7 @@ public:
     QVariantList gamepadButtonInput() const;
     LogListModel* logs();
     ComponentListModel* components();
+    RealTimeDataListModel* realTimeDatas();
     bool isUsbAutoConnect() const;
     bool isGamepadAutoConnect() const;
     int maxGamepadAxisPercentage() const;
@@ -73,6 +76,7 @@ signals:
     void gamepadButtonInputChanged();
     void logsChanged();
     void componentsChanged();
+    void realTimeDatasChanged();
     void isUsbAutoConnectChanged();
     void isGamepadAutoConnectChanged();
     void maxGamepadAxisPercentageChanged();
@@ -120,6 +124,7 @@ private:
 
     LogListModel m_logs{};
     ComponentListModel m_components{};
+    RealTimeDataListModel m_realTimeDataListModel{};
 
     QList<int> m_gamepadAxisInput;
     QList<bool> m_gamepadButtonInput;

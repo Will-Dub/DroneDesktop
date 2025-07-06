@@ -968,6 +968,7 @@ ApplicationWindow {
                     Layout.fillHeight: true
                     Layout.fillWidth: true
                     visible: isRealTimeDataViewVisible
+                    realTimeDatas: drone.realTimeDatas
                 }
             }
 
@@ -1002,8 +1003,7 @@ ApplicationWindow {
                 }
                 DashboardLogView {
                     messages: drone.logs;
-                    Layout.preferredHeight: 300
-                    Layout.fillHeight: false
+                    Layout.fillHeight: true
                     Layout.fillWidth: true
                     visible: isLogViewVisible
                 }

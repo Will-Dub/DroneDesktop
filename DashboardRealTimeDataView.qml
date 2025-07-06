@@ -5,6 +5,8 @@ import QtQuick.Layouts
 Item {
     id: root
 
+    required property var realTimeDatas;
+
     Pane{
         anchors.fill: parent
 
@@ -24,26 +26,16 @@ Item {
                 width: scrollview.width
                 columns: Math.max(1, Math.floor(scrollview.width / 200))
 
-                SingleDataView {
-                    Layout.preferredHeight: 100
-                    Layout.fillWidth: true
+                Repeater{
+                    model: root.realTimeDatas
 
-                    title: "Altitude"
-                    value: "54321"
-                }
-                SingleDataView {
-                    Layout.preferredHeight: 100
-                    Layout.fillWidth: true
+                    delegate: SingleDataView {
+                        Layout.preferredHeight: implicitHeight
+                        Layout.fillWidth: true
 
-                    title: "Battery"
-                    value: "100%"
-                }
-                SingleDataView {
-                    Layout.preferredHeight: 100
-                    Layout.fillWidth: true
-
-                    title: "Latitude"
-                    value: "12345"
+                        title: model.title
+                        value: model.value
+                    }
                 }
             }
         }

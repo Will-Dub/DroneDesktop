@@ -4,8 +4,10 @@ import QtQuick.Controls.Universal
 Item {
     id: dataView
 
-    required property string title
-    required property string value
+    implicitHeight: dataViewTitle.implicitHeight + valueLabel.implicitHeight + 20
+
+    property string title
+    property string value
 
     Pane{
         anchors.fill: parent
@@ -21,6 +23,10 @@ Item {
             font.pixelSize: 20
             font.bold: true
             color: "#bdbbb7"
+            lineHeight: 1.2
+            wrapMode: Text.WordWrap
+            width: parent.width
+            horizontalAlignment: Text.AlignHCenter
 
             anchors{
                 horizontalCenter: parent.horizontalCenter
@@ -28,10 +34,15 @@ Item {
         }
 
         Label{
+            id: valueLabel
             text: value
             font.pixelSize: 20
             font.bold: true
             color: "white"
+            lineHeight: 1.2
+            wrapMode: Text.WordWrap
+            width: parent.width
+            horizontalAlignment: Text.AlignHCenter
 
             anchors{
                 horizontalCenter: parent.horizontalCenter

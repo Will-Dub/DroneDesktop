@@ -199,6 +199,11 @@ ComponentListModel *DroneBackend::components()
     return &m_components;
 }
 
+RealTimeDataListModel *DroneBackend::realTimeDatas()
+{
+    return &m_realTimeDataListModel;
+}
+
 bool DroneBackend::isUsbAutoConnect() const
 {
     QSettings settings;

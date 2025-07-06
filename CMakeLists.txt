@@ -42,6 +42,7 @@ qt_add_qml_module(appDroneDesktop
         QML_FILES CustomCheckbox.qml
         QML_FILES CustomTitle.qml
         SOURCES componentlistmodel.h componentlistmodel.cpp
+        SOURCES realtimedatalistmodel.h realtimedatalistmodel.cpp
 )
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.
