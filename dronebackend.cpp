@@ -261,11 +261,12 @@ void DroneBackend::toggleComponentStatus(int index)
 {
     const Component& component = m_components.getComponent(index);
 
+    QString value = componentValueToString(component.value);
     if(component.status == Status::OFF){
-        DataPacket startPacket{1,1,DataPacketType::START_SPECIFIC, component.value.toUtf8()};
+        DataPacket startPacket{1,1,DataPacketType::START_SPECIFIC, value.toUtf8()};
         emit doUsbWriteData(startPacket);
     }else if(component.status == Status::ON){
-        DataPacket startPacket{1,1,DataPacketType::STOP_SPECIFIC, component.value.toUtf8()};
+        DataPacket startPacket{1,1,DataPacketType::STOP_SPECIFIC, value.toUtf8()};
         emit doUsbWriteData(startPacket);
     }
 
@@ -357,7 +358,17 @@ void DroneBackend::onNewPacketReceived(const DataPacket &dataPacket)
             return;
         }
 
-        qDebug() << "Drone Backend: Status data received";
+        bool useMotors = statusData.useMotor1 && statusData.useMotor2 && statusData.useMotor3 && statusData.useMotor4;
+        m_components.setStatusByComponentValue(ComponentValue::COMPONENT_MOTOR, Component::statusFromBool(useMotors));
+        m_components.setStatusByComponentValue(ComponentValue::COMPONENT_MOTOR_1, Component::statusFromBool(statusData.useMotor1));
+        m_components.setStatusByComponentValue(ComponentValue::COMPONENT_MOTOR_2, Component::statusFromBool(statusData.useMotor2));
+        m_components.setStatusByComponentValue(ComponentValue::COMPONENT_MOTOR_3, Component::statusFromBool(statusData.useMotor3));
+        m_components.setStatusByComponentValue(ComponentValue::COMPONENT_MOTOR_4, Component::statusFromBool(statusData.useMotor4));
+        m_components.setStatusByComponentValue(ComponentValue::COMPONENT_MOTOR_INFORMATION, Component::statusFromBool(statusData.useMotorInformation));
+        m_components.setStatusByComponentValue(ComponentValue::COMPONENT_MPU6050, Component::statusFromBool(statusData.useMpu6050));
+        m_components.setStatusByComponentValue(ComponentValue::COMPONENT_QMC5883L, Component::statusFromBool(statusData.useQmc5883l));
+        m_components.setStatusByComponentValue(ComponentValue::COMPONENT_GPS, Component::statusFromBool(statusData.useGps));
+        m_components.setStatusByComponentValue(ComponentValue::COMPONENT_LOG, Component::statusFromBool(statusData.useLog));
 
         break;
     }

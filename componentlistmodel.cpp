@@ -3,16 +3,16 @@
 ComponentListModel::ComponentListModel(QObject *parent)
     : QAbstractListModel{parent}
 {
-    addComponent("Motors", "MOTOR");
-    addComponent("Motor 1", "MOTOR_1");
-    addComponent("Motor 2", "MOTOR_2");
-    addComponent("Motor 3", "MOTOR_3");
-    addComponent("Motor 4", "MOTOR_4");
-    addComponent("Get motor informations", "MOTOR_INFORMATION");
-    addComponent("Use MPU 6050", "MPU6050");
-    addComponent("Use QMC 5883l", "QML5883L");
-    addComponent("Use GPS", "GPS");
-    addComponent("Get logs", "LOG");
+    addComponent("Motors", COMPONENT_MOTOR);
+    addComponent("Motor 1", COMPONENT_MOTOR_1);
+    addComponent("Motor 2", COMPONENT_MOTOR_2);
+    addComponent("Motor 3", COMPONENT_MOTOR_3);
+    addComponent("Motor 4", COMPONENT_MOTOR_4);
+    addComponent("Get motor informations", COMPONENT_MOTOR_INFORMATION);
+    addComponent("Use MPU 6050", COMPONENT_MPU6050);
+    addComponent("Use QMC 5883l", COMPONENT_QMC5883L);
+    addComponent("Use GPS", COMPONENT_GPS);
+    addComponent("Get logs", COMPONENT_LOG);
 }
 
 int ComponentListModel::rowCount(const QModelIndex &parent) const
@@ -45,10 +45,10 @@ QHash<int, QByteArray> ComponentListModel::roleNames() const
     };
 }
 
-void ComponentListModel::addComponent(const QString &name, const QString& value)
+void ComponentListModel::addComponent(const QString &name, ComponentValue componentValue)
 {
     beginInsertRows(QModelIndex(), m_components.size(), m_components.size());
-    m_components.append({name, value, Status::OFF_LOCKED});
+    m_components.append({name, componentValue, Status::OFF_LOCKED});
     endInsertRows();
 }
 
@@ -62,6 +62,18 @@ void ComponentListModel::setStatus(int index, Status status)
 
     QModelIndex modelIndex = createIndex(index, 0);
     emit dataChanged(modelIndex, modelIndex, {StatusRole});
+}
+
+void ComponentListModel::setStatusByComponentValue(ComponentValue componentValue, Status status)
+{
+    // TODO optimize this?
+    auto it = std::find_if(m_components.begin(), m_components.end(), [componentValue](const Component &component) {
+        return component.value == componentValue;
+    });
+
+    if(it == m_components.end() || it == nullptr) return;
+
+    it->status = status;
 }
 
 void ComponentListModel::toggleStatus(int index)
