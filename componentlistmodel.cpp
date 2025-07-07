@@ -58,6 +58,8 @@ void ComponentListModel::setStatus(int index, Status status)
         return;
     }
 
+    if(m_components[index].status == status) return;
+
     m_components[index].status = status;
 
     QModelIndex modelIndex = createIndex(index, 0);
@@ -73,14 +75,19 @@ void ComponentListModel::setStatusByComponentValue(ComponentValue componentValue
 
     if(it == m_components.end() || it == nullptr) return;
 
+    if(it->status == status) return;
+
     it->status = status;
+
+    int row = std::distance(m_components.begin(), it);
+    QModelIndex index = createIndex(row, 0);
+
+    emit dataChanged(index, index, {StatusRole});
 }
 
 void ComponentListModel::toggleStatus(int index)
 {
-    if (index < 0 || index >= m_components.size()) {
-        return;
-    }
+    if (index < 0 || index >= m_components.size()) return;
 
     Status currentStatus = m_components[index].status;
 

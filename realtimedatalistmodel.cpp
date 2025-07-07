@@ -2,10 +2,13 @@
 
 RealTimeDataListModel::RealTimeDataListModel(QObject *parent)
 {
-    addRealTimeDataPoint("Altitude", "0", RealTimeDataPointType::ALTITUDE);
     addRealTimeDataPoint("Latitude", "0", RealTimeDataPointType::LATITUDE);
-    addRealTimeDataPoint("Mpu6050", "0", RealTimeDataPointType::MPU6050);
-    setValueByDataType(RealTimeDataPointType::MPU6050, 0);
+    addRealTimeDataPoint("Longitude", "0", RealTimeDataPointType::LONGITUDE);
+    addRealTimeDataPoint("Altitude", "0", RealTimeDataPointType::ALTITUDE);
+    addRealTimeDataPoint("Is zero connected", RealTimeDataPoint::valueFromBool(false), RealTimeDataPointType::UART_ZERO_CONNECTED);
+    addRealTimeDataPoint("Is GPS connected", RealTimeDataPoint::valueFromBool(false), RealTimeDataPointType::UART_GPS_CONNECTED);
+    addRealTimeDataPoint("Is i2c connected", RealTimeDataPoint::valueFromBool(false), RealTimeDataPointType::I2C_CONNECTED);
+    addRealTimeDataPoint("Is lora connected", RealTimeDataPoint::valueFromBool(false), RealTimeDataPointType::LORA_CONNECTED);
 }
 
 int RealTimeDataListModel::rowCount(const QModelIndex &parent) const
@@ -47,7 +50,14 @@ void RealTimeDataListModel::setValueByDataType(RealTimeDataPointType type, const
 
     if(it == m_realTimeDataPoints.end() || it == nullptr) return;
 
+    if(it->value == value) return;
+
     it->value = value;
+
+    int row = std::distance(m_realTimeDataPoints.begin(), it);
+    QModelIndex index = createIndex(row, 0);
+
+    emit dataChanged(index, index, {ValueRole});
 }
 
 void RealTimeDataListModel::addRealTimeDataPoint(const QString &title, const QString &value, RealTimeDataPointType type)

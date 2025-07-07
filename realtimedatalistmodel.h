@@ -5,14 +5,25 @@
 
 enum RealTimeDataPointType {
     LATITUDE,
+    LONGITUDE,
     ALTITUDE,
-    MPU6050
+    UART_ZERO_CONNECTED,
+    UART_GPS_CONNECTED,
+    I2C_CONNECTED,
+    LORA_CONNECTED
 };
 
 struct RealTimeDataPoint {
     QString title;
     QString value;
     RealTimeDataPointType type;
+
+    static QString valueFromBool(bool value){
+        if(value == true){
+            return "True";
+        }
+        return "False";
+    }
 };
 
 class RealTimeDataListModel : public QAbstractListModel
@@ -31,9 +42,10 @@ public:
     QVariant data(const QModelIndex &index, int role) const override;
     QHash<int, QByteArray> roleNames() const override;
 
+    void setValueByDataType(RealTimeDataPointType type, const QString& value);
+
 private:
     void addRealTimeDataPoint(const QString& title, const QString& value, RealTimeDataPointType type);
-    void setValueByDataType(RealTimeDataPointType type, const QString& value);
 
 private:
     QVector<RealTimeDataPoint> m_realTimeDataPoints;

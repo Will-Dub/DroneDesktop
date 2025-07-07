@@ -899,8 +899,8 @@ ApplicationWindow {
                 ColumnLayout{
                     spacing: 0
                     SidebarCheckbox{
-                        labelText: "Calibration"
-                        mouseArea.onClicked: stackView.currentItem.isCalibrationViewVisible = !stackView.currentItem.isCalibrationViewVisible
+                        labelText: "Settings"
+                        mouseArea.onClicked: stackView.currentItem.isSettingsViewVisible = !stackView.currentItem.isSettingsViewVisible
                         isOn: true
                     }
 
@@ -942,7 +942,7 @@ ApplicationWindow {
             property bool isRealTimeDataViewVisible: true
             property bool isVideoViewVisible: true
             property bool isLogViewVisible: true
-            property bool isCalibrationViewVisible: true
+            property bool isSettingsViewVisible: true
             property bool isComponentViewVisible: true
 
             spacing: 0
@@ -976,18 +976,18 @@ ApplicationWindow {
                 Layout.fillHeight: true
                 Layout.fillWidth: true
                 spacing: 0
-                visible: isVideoViewVisible || isCalibrationViewVisible || isComponentViewVisible || isLogViewVisible
+                visible: isVideoViewVisible || isSettingsViewVisible || isComponentViewVisible || isLogViewVisible
 
                 /*DashboardVideoView {
                     Layout.fillHeight: true
                     Layout.fillWidth: true
                     visible: isVideoViewVisible
-                }
+                }*/
                 DashboardVideoView {
                     Layout.fillHeight: true
                     Layout.fillWidth: true
-                    visible: isCalibrationViewVisible
-                }*/
+                    visible: isSettingsViewVisible
+                }
                 DashboardComponentView {
                     components: drone.components;
                     Layout.fillHeight: true

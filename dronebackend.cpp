@@ -363,6 +363,7 @@ void DroneBackend::onNewPacketReceived(const DataPacket &dataPacket)
             return;
         }
 
+        // Update component list model
         bool useMotors = statusData.useMotor1 && statusData.useMotor2 && statusData.useMotor3 && statusData.useMotor4;
         m_components.setStatusByComponentValue(ComponentValue::COMPONENT_MOTOR, Component::statusFromBool(useMotors));
         m_components.setStatusByComponentValue(ComponentValue::COMPONENT_MOTOR_1, Component::statusFromBool(statusData.useMotor1));
@@ -375,6 +376,12 @@ void DroneBackend::onNewPacketReceived(const DataPacket &dataPacket)
         m_components.setStatusByComponentValue(ComponentValue::COMPONENT_GPS, Component::statusFromBool(statusData.useGps));
         m_components.setStatusByComponentValue(ComponentValue::COMPONENT_LOG, Component::statusFromBool(statusData.useLog));
 
+        // Update real time data list model
+        m_realTimeDataListModel.setValueByDataType(RealTimeDataPointType::I2C_CONNECTED, RealTimeDataPoint::valueFromBool(statusData.i2cConnected));
+        m_realTimeDataListModel.setValueByDataType(RealTimeDataPointType::LORA_CONNECTED, RealTimeDataPoint::valueFromBool(statusData.loraConnected));
+        m_realTimeDataListModel.setValueByDataType(RealTimeDataPointType::UART_GPS_CONNECTED, RealTimeDataPoint::valueFromBool(statusData.uartGpsConnected));
+        m_realTimeDataListModel.setValueByDataType(RealTimeDataPointType::UART_ZERO_CONNECTED, RealTimeDataPoint::valueFromBool(statusData.uartZeroConnected));
+
         break;
     }
     case DataPacketType::LOG: {
@@ -385,6 +392,19 @@ void DroneBackend::onNewPacketReceived(const DataPacket &dataPacket)
             break;
 
         m_logs.addLog(parts[1], parts[0].toInt());
+    }
+    case DataPacketType::GPS: {
+        QString str = QString::fromUtf8(dataPacket.m_data);
+        QStringList parts = str.split(';', Qt::SkipEmptyParts);
+
+        if (parts.size() < 5)
+            break;
+
+
+        // Update real time list model
+        m_realTimeDataListModel.setValueByDataType(RealTimeDataPointType::LATITUDE, parts[0]);
+        m_realTimeDataListModel.setValueByDataType(RealTimeDataPointType::LONGITUDE, parts[1]);
+        m_realTimeDataListModel.setValueByDataType(RealTimeDataPointType::ALTITUDE, parts[2]);
     }
     default:
         qCritical() << "Drone Backend: Unhandled data packet type";
