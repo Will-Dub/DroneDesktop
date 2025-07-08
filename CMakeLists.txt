@@ -4,7 +4,7 @@ project(DroneDesktop VERSION 0.1 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-find_package(Qt6 REQUIRED COMPONENTS Quick SerialPort)
+find_package(Qt6 REQUIRED COMPONENTS Quick SerialPort Location)
 find_package(SDL2 REQUIRED CONFIG REQUIRED COMPONENTS SDL2)
 
 qt_standard_project_setup(REQUIRES 6.8)

@@ -955,13 +955,13 @@ ApplicationWindow {
                 spacing: 0
                 visible: isGpsViewVisible || isRealTimeDataViewVisible
 
-                /*
+
                 DashboardGpsView {
                     Layout.preferredHeight: parent.height * 0.8
                     Layout.fillHeight: true
                     Layout.fillWidth: true
                     visible: isGpsViewVisible
-                }*/
+                }
 
                 DashboardRealTimeDataView {
                     Layout.preferredHeight: parent.height * 0.2
