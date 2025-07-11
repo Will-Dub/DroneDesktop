@@ -12,6 +12,7 @@
 #include "loglistmodel.h"
 #include "componentlistmodel.h"
 #include "realtimedatalistmodel.h"
+#include <QtPositioning/QGeoCoordinate>
 
 class DroneBackend : public QObject
 {
@@ -31,6 +32,7 @@ class DroneBackend : public QObject
     Q_PROPERTY(bool isUsbAutoConnect READ isUsbAutoConnect WRITE setIsUsbAutoConnect NOTIFY isUsbAutoConnectChanged)
     Q_PROPERTY(bool isGamepadAutoConnect READ isGamepadAutoConnect WRITE setIsGamepadAutoConnect NOTIFY isGamepadAutoConnectChanged)
     Q_PROPERTY(int maxGamepadAxisPercentage READ maxGamepadAxisPercentage WRITE setMaxGamepadAxisPercentage NOTIFY maxGamepadAxisPercentageChanged)
+    Q_PROPERTY(QGeoCoordinate droneLocation READ droneLocation NOTIFY droneLocationChanged)
 
 public:
     explicit DroneBackend(QObject* parent = nullptr);
@@ -51,6 +53,7 @@ public:
     bool isUsbAutoConnect() const;
     bool isGamepadAutoConnect() const;
     int maxGamepadAxisPercentage() const;
+    QGeoCoordinate droneLocation() const;
 
     // Methods for QML
     Q_INVOKABLE bool connectToUsb(const QString &portName);
@@ -80,6 +83,7 @@ signals:
     void isUsbAutoConnectChanged();
     void isGamepadAutoConnectChanged();
     void maxGamepadAxisPercentageChanged();
+    void droneLocationChanged();
 
     // Signals to usb worker
     void doUsbConnect(const QString& portName);
@@ -133,6 +137,9 @@ private:
     bool m_isUsbConnected = false;
     bool m_isGamepadConnected = false;
     int m_maxGamepadAxisPercentage = 100;
+
+    QGeoCoordinate m_droneCoordinate{45.5, -73.5};
+    void setDroneCoordinate(double latitude, double longitude, double altitude);
 
     static QString gamepadTypeToString(SDL_GameControllerType type);
 };

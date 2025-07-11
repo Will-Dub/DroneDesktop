@@ -961,6 +961,7 @@ ApplicationWindow {
                     Layout.fillHeight: true
                     Layout.fillWidth: true
                     visible: isGpsViewVisible
+                    droneLocation: drone.droneLocation
                 }
 
                 DashboardRealTimeDataView {

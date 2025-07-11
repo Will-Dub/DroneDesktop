@@ -57,7 +57,7 @@ set_target_properties(appDroneDesktop PROPERTIES
 )
 
 target_link_libraries(appDroneDesktop
-    PRIVATE Qt6::Quick Qt${QT_VERSION_MAJOR}::SerialPort SDL2::SDL2
+    PRIVATE Qt6::Quick Qt${QT_VERSION_MAJOR}::SerialPort Qt${QT_VERSION_MAJOR}::Positioning SDL2::SDL2
 )
 
 include(GNUInstallDirs)

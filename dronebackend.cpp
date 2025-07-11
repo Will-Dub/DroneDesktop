@@ -223,6 +223,11 @@ int DroneBackend::maxGamepadAxisPercentage() const
     return m_maxGamepadAxisPercentage;
 }
 
+QGeoCoordinate DroneBackend::droneLocation() const
+{
+    return m_droneCoordinate;
+}
+
 bool DroneBackend::connectToUsb(const QString& portName)
 {
     if (!m_isUsbConnected) {
@@ -405,6 +410,8 @@ void DroneBackend::onNewPacketReceived(const DataPacket &dataPacket)
         m_realTimeDataListModel.setValueByDataType(RealTimeDataPointType::LATITUDE, parts[0]);
         m_realTimeDataListModel.setValueByDataType(RealTimeDataPointType::LONGITUDE, parts[1]);
         m_realTimeDataListModel.setValueByDataType(RealTimeDataPointType::ALTITUDE, parts[2]);
+
+        setDroneCoordinate(parts[0].toDouble(), parts[1].toDouble(), parts[2].toDouble());
     }
     default:
         qCritical() << "Drone Backend: Unhandled data packet type";
@@ -508,6 +515,15 @@ QVariantMap DroneBackend::mapGamepadDeviceInfo(const GamepadInfo& gamepadInfo)
     info["guid"] = gamepadInfo.guid;
     info["isConnected"] = gamepadInfo.isConnected;
     return info;
+}
+
+void DroneBackend::setDroneCoordinate(double latitude, double longitude, double altitude)
+{
+    m_droneCoordinate.setLatitude(latitude);
+    m_droneCoordinate.setLongitude(longitude);
+    m_droneCoordinate.setAltitude(altitude);
+
+    emit droneLocationChanged();
 }
 
 QVariantMap DroneBackend::mapUsbDeviceInfo(const UsbInfo &portInfo)
