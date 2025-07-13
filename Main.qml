@@ -984,10 +984,12 @@ ApplicationWindow {
                     Layout.fillWidth: true
                     visible: isVideoViewVisible
                 }*/
-                DashboardVideoView {
+                DashboardSettingsView {
                     Layout.fillHeight: true
                     Layout.fillWidth: true
                     visible: isSettingsViewVisible
+                    //isEnabled: drone.connected
+                    isEnabled: true
                 }
                 DashboardComponentView {
                     components: drone.components;
