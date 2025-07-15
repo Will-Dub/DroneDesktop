@@ -259,9 +259,9 @@ Item {
             anchors.fill: parent
             acceptedButtons: Qt.RightButton
             onClicked: {
-                if (mouse.button === Qt.RightButton) {
+                /*if (mouse.button === Qt.RightButton) {
                     // TODO add menu
-                }
+                }*/
             }
         }
 

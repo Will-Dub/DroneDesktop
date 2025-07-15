@@ -12,6 +12,7 @@
 #include "loglistmodel.h"
 #include "componentlistmodel.h"
 #include "realtimedatalistmodel.h"
+#include "settingslistmodel.h"
 #include <QtPositioning/QGeoCoordinate>
 
 class DroneBackend : public QObject
@@ -29,6 +30,7 @@ class DroneBackend : public QObject
     Q_PROPERTY(LogListModel* logs READ logs NOTIFY logsChanged)
     Q_PROPERTY(ComponentListModel* components READ components NOTIFY componentsChanged)
     Q_PROPERTY(RealTimeDataListModel* realTimeDatas READ realTimeDatas NOTIFY realTimeDatasChanged)
+    Q_PROPERTY(SettingsListModel* settings READ settings NOTIFY settingsChanged)
     Q_PROPERTY(bool isUsbAutoConnect READ isUsbAutoConnect WRITE setIsUsbAutoConnect NOTIFY isUsbAutoConnectChanged)
     Q_PROPERTY(bool isGamepadAutoConnect READ isGamepadAutoConnect WRITE setIsGamepadAutoConnect NOTIFY isGamepadAutoConnectChanged)
     Q_PROPERTY(int maxGamepadAxisPercentage READ maxGamepadAxisPercentage WRITE setMaxGamepadAxisPercentage NOTIFY maxGamepadAxisPercentageChanged)
@@ -50,6 +52,7 @@ public:
     LogListModel* logs();
     ComponentListModel* components();
     RealTimeDataListModel* realTimeDatas();
+    SettingsListModel* settings();
     bool isUsbAutoConnect() const;
     bool isGamepadAutoConnect() const;
     int maxGamepadAxisPercentage() const;
@@ -61,6 +64,7 @@ public:
     Q_INVOKABLE void disconnectUsb();
     Q_INVOKABLE void disconnectGamepad();
     Q_INVOKABLE void toggleComponentStatus(int index);
+    Q_INVOKABLE void changeSettingsValue(int index, const QString& value);
     Q_INVOKABLE void refreshComponentStatus();
 
     // Setting change
@@ -80,6 +84,7 @@ signals:
     void logsChanged();
     void componentsChanged();
     void realTimeDatasChanged();
+    void settingsChanged();
     void isUsbAutoConnectChanged();
     void isGamepadAutoConnectChanged();
     void maxGamepadAxisPercentageChanged();
@@ -115,6 +120,11 @@ public slots:
     void onRefreshGamepadDevices();
 
 private:
+    void setDroneCoordinate(double latitude, double longitude, double altitude);
+    static QString gamepadTypeToString(SDL_GameControllerType type);
+    bool sendPacket(DataPacket dataPacket);
+
+private:
     QThread* m_usbThread = nullptr;
     UsbWorker* m_usbWorker = nullptr;
     QThread* m_gamepadThread = nullptr;
@@ -129,6 +139,7 @@ private:
     LogListModel m_logs{};
     ComponentListModel m_components{};
     RealTimeDataListModel m_realTimeDataListModel{};
+    SettingsListModel m_settingsListModel{};
 
     QList<int> m_gamepadAxisInput;
     QList<bool> m_gamepadButtonInput;
@@ -138,10 +149,10 @@ private:
     bool m_isGamepadConnected = false;
     int m_maxGamepadAxisPercentage = 100;
 
-    QGeoCoordinate m_droneCoordinate{45.5, -73.5};
-    void setDroneCoordinate(double latitude, double longitude, double altitude);
+    int m_nextPacketId = 1;
+    const int m_droneId = 1;
 
-    static QString gamepadTypeToString(SDL_GameControllerType type);
+    QGeoCoordinate m_droneCoordinate{45.5, -73.5};
 };
 
 #endif // DRONEBACKEND_H

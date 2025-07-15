@@ -715,7 +715,7 @@ ApplicationWindow {
     }
 
     // Top header
-    header: ToolBar {
+    /*header: ToolBar {
         id: mainToolBar
         height: 56
 
@@ -743,7 +743,7 @@ ApplicationWindow {
                 ToolTip.text: "Settings"
             }
         }
-    }
+    }*/
 
     RowLayout {
         anchors.fill: parent
@@ -879,12 +879,6 @@ ApplicationWindow {
                     }
 
                     SidebarCheckbox{
-                        labelText: "Video"
-                        mouseArea.onClicked: stackView.currentItem.isVideoViewVisible = !stackView.currentItem.isVideoViewVisible
-                        isOn: true
-                    }
-
-                    SidebarCheckbox{
                         labelText: "Logs"
                         mouseArea.onClicked: stackView.currentItem.isLogViewVisible = !stackView.currentItem.isLogViewVisible
                         isOn: true
@@ -940,7 +934,6 @@ ApplicationWindow {
         RowLayout{
             property bool isGpsViewVisible: true
             property bool isRealTimeDataViewVisible: true
-            property bool isVideoViewVisible: true
             property bool isLogViewVisible: true
             property bool isSettingsViewVisible: true
             property bool isComponentViewVisible: true
@@ -954,7 +947,6 @@ ApplicationWindow {
                 Layout.fillWidth: true
                 spacing: 0
                 visible: isGpsViewVisible || isRealTimeDataViewVisible
-
 
                 DashboardGpsView {
                     Layout.preferredHeight: parent.height * 0.8
@@ -977,22 +969,20 @@ ApplicationWindow {
                 Layout.fillHeight: true
                 Layout.fillWidth: true
                 spacing: 0
-                visible: isVideoViewVisible || isSettingsViewVisible || isComponentViewVisible || isLogViewVisible
+                visible: isSettingsViewVisible || isComponentViewVisible || isLogViewVisible
 
-                /*DashboardVideoView {
-                    Layout.fillHeight: true
-                    Layout.fillWidth: true
-                    visible: isVideoViewVisible
-                }*/
                 DashboardSettingsView {
+                    settings: drone.settings
                     Layout.fillHeight: true
                     Layout.fillWidth: true
                     visible: isSettingsViewVisible
-                    //isEnabled: drone.connected
-                    isEnabled: true
+                    isEnabled: drone.connected
+                    onChangeSettingsValue: function(index, value){
+                        drone.changeSettingsValue(index, value)
+                    }
                 }
                 DashboardComponentView {
-                    components: drone.components;
+                    components: drone.components
                     Layout.fillHeight: true
                     Layout.fillWidth: true
                     visible: isComponentViewVisible

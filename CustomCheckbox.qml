@@ -33,6 +33,7 @@ Item{
                 border.color: !checkbox.enabled ? "#555555" : (checkbox.checked ? "#0078d4" : "#555555")
                 border.width: 2
                 opacity: checkbox.enabled ? 1.0 : 0.5
+                anchors.verticalCenter: parent.verticalCenter
 
                 Rectangle {
                     width: 8
@@ -66,11 +67,11 @@ Item{
         Label {
             text: root.text
             Layout.fillHeight: true
-            color: root.enabled ? "#ffffff" : "#888888"
+            color: root.isEnabled ? "#ffffff" : "#cccccc"
             font.family: "Arial"
             font.pixelSize: 14
             font.weight: Font.Medium
-            Layout.alignment: Qt.AlignVCenter
+            verticalAlignment: Text.AlignVCenter
         }
 
         Item {

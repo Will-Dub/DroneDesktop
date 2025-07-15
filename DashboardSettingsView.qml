@@ -5,9 +5,11 @@ import QtQuick.Layouts
 Item {
     id: root
 
+    required property var settings;
     required property bool isEnabled;
 
     signal refreshClicked()
+    signal changeSettingsValue(int index, string value)
 
     Pane {
         anchors.fill: parent
@@ -75,102 +77,117 @@ Item {
                     }
                 }
 
-                RowLayout {
-                    property bool isEnabled: true
-                    spacing: 12
+                Repeater{
+                    model: root.settings
 
-                    Label {
-                        text: "Max motor speed:"
-                        color: parent.isEnabled ? "#ffffff" : "#888888"
-                        enabled: parent.isEnabled
-                        font.family: "Arial"
-                        font.pixelSize: 14
-                        font.weight: Font.Medium
-                        Layout.alignment: Qt.AlignVCenter
-                        Layout.preferredHeight: 32
-                        verticalAlignment: Text.AlignVCenter
-                    }
+                    delegate: RowLayout {
+                        id: element
+                        property bool isSettingEnabled: root.isEnabled && !model.isChanging
+                        spacing: 12
 
-                    Rectangle {
-                        Layout.fillWidth: true
-                        Layout.preferredHeight: 32
-                        Layout.alignment: Qt.AlignVCenter
-                        color: parent.isEnabled ? "#2a2a2a" : "#1a1a1a"
-                        border.color: textfield.activeFocus ? "#4CAF50" : (parent.isEnabled ? "#555555" : "#333333")
-                        border.width: 1
-                        radius: 4
-
-                        TextField {
-                            id: textfield
-                            anchors.fill: parent
-                            enabled: root.isEnabled
-                            color: root.isEnabled ? "#ffffff" : "#888888"
+                        Label {
+                            text: model.title
+                            color: element.isSettingEnabled ? "#ffffff" : "#cccccc"
+                            enabled: element.isSettingEnabled
                             font.family: "Arial"
                             font.pixelSize: 14
-                            verticalAlignment: TextEdit.AlignVCenter
-                            inputMethodHints: Qt.ImhDigitsOnly
-                            text: "100"
-                            leftPadding: 8
-                            rightPadding: 8
-                            topPadding: 0
-                            bottomPadding: 0
-                            selectByMouse: true
-                            background: Rectangle {
-                                color: "transparent"
-                            }
-                            validator: IntValidator {
-                                bottom: 0
-                                top: 100
-                            }
+                            font.weight: Font.Medium
+                            Layout.alignment: Qt.AlignVCenter
+                            Layout.preferredHeight: 32
+                            verticalAlignment: Text.AlignVCenter
+                        }
 
-                            Keys.onReturnPressed: {
-                                textfield.editingFinished()
-                            }
+                        Rectangle {
+                            Layout.fillWidth: true
+                            Layout.preferredHeight: 32
+                            Layout.alignment: Qt.AlignVCenter
+                            color: element.isSettingEnabled ? "#2a2a2a" : "#1a1a1a"
+                            border.color: textfield.activeFocus ? "#4CAF50" : (element.isSettingEnabled ? "#555555" : "#333333")
+                            border.width: 1
+                            radius: 4
 
-                            Keys.onEnterPressed: {
-                                textfield.editingFinished()
-                            }
-
-                            onEditingFinished: {
-                                if (text === "") {
-                                    text = "0"
-                                    return
+                            TextField {
+                                id: textfield
+                                anchors.fill: parent
+                                enabled: element.isSettingEnabled
+                                color: element.isSettingEnabled ? "#ffffff" : "#888888"
+                                font.family: "Arial"
+                                font.pixelSize: 14
+                                verticalAlignment: TextEdit.AlignVCenter
+                                inputMethodHints: Qt.ImhDigitsOnly
+                                text: model.value
+                                leftPadding: 8
+                                rightPadding: 8
+                                topPadding: 0
+                                bottomPadding: 0
+                                selectByMouse: true
+                                background: Rectangle {
+                                    color: "transparent"
                                 }
-                                var num = parseInt(text)
-                                if (isNaN(num)) {
-                                    text = "0"
-                                    return
+                                validator: IntValidator {
+                                    bottom: 0
+                                    top: 100
                                 }
-                                if (num < 0) {
-                                    text = "0"
-                                } else if (num > 100) {
-                                    text = "100"
-                                }
-                            }
 
-                            onActiveFocusChanged: {
-                                if (activeFocus) {
-                                    selectAll()
-                                } else {
-                                    editingFinished()
+                                Keys.onReturnPressed: {
+                                    textfield.editingFinished()
+                                    changeSettingsValue(index, text)
+                                }
+
+                                Keys.onEnterPressed: {
+                                    textfield.editingFinished()
+                                    changeSettingsValue(index, text)
+                                }
+
+                                Keys.onEscapePressed: {
+                                    textfield.editingFinished()
+                                    changeSettingsValue(index, text)
+                                }
+
+                                onEditingFinished: {
+                                    if (text === "") {
+                                        text = "0"
+                                        return
+                                    }
+                                    var num = parseInt(text)
+                                    if (isNaN(num)) {
+                                        text = "0"
+                                        return
+                                    }
+                                    if (num < 0) {
+                                        text = "0"
+                                    } else if (num > 100) {
+                                        text = "100"
+                                    }
+
+                                }
+
+                                onActiveFocusChanged: {
+                                    if (activeFocus) {
+                                        selectAll()
+                                    } else {
+                                        editingFinished()
+                                        changeSettingsValue(index, text)
+                                    }
                                 }
                             }
                         }
                     }
                 }
 
-                Button {
+                /*Button {
                     Layout.preferredWidth: 80
                     Layout.preferredHeight: 30
                     text: "Save"
+                    enabled: root.isEnabled
                     font.bold: true
                     font.pixelSize: 16
                     Layout.columnSpan: parent.columns
                     background: Rectangle {
-                        color: parent.pressed ? "#3f9437" : (parent.hovered ? "#55c94b" : "#67f05b")
+                        color: !parent.enabled ? "#606060" : parent.pressed ? "#3f9437" : (parent.hovered ? "#55c94b" : "#67f05b")
                         radius: 4
-                        border.width: parent.visualFocus ? 2 : 1
-                        border.color: parent.visualFocus ? "#10380c" : (parent.hovered ? "#164a10" : "transparent")
+                        border.width: !parent.enabled ? "#424242" : parent.visualFocus ? 2 : 1
+                        border.color: !parent.enabled ? "#2d2d2d" : parent.visualFocus ? "#10380c" : (parent.hovered ? "#164a10" : "transparent")
                         Behavior on color {
                             ColorAnimation { duration: 150 }
                         }
@@ -181,7 +198,7 @@ Item {
                     onClicked: {
                         console.log("Clicked")
                     }
-                }
+                }*/
             }
         }
     }

@@ -25,6 +25,16 @@ DataPacket::DataPacket(const DataPacket &other)
     m_isValid(other.m_isValid)
 {}
 
+DataPacket::DataPacket(DataPacketType type, const QByteArray &payload)
+{
+    m_header.droneId = 0;
+    m_header.packetId = 0;
+    m_header.type = type;
+    m_header.dataSize = payload.size();
+    m_data = payload;
+    m_isValid = true;
+}
+
 DataPacket DataPacket::deserialize(const QByteArray &rawData) {
     DataPacket packet;
 

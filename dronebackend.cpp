@@ -204,6 +204,11 @@ RealTimeDataListModel *DroneBackend::realTimeDatas()
     return &m_realTimeDataListModel;
 }
 
+SettingsListModel *DroneBackend::settings()
+{
+    return &m_settingsListModel;
+}
+
 bool DroneBackend::isUsbAutoConnect() const
 {
     QSettings settings;
@@ -249,8 +254,8 @@ void DroneBackend::connectToGamepad(const int joystickId)
 
 void DroneBackend::disconnectUsb()
 {
-    DataPacket endPacket{1,1,DataPacketType::STOP,{}};
-    emit doUsbWriteData(endPacket);
+    DataPacket endPacket{DataPacketType::STOP,{}};
+    sendPacket(endPacket);
 
     if(m_isUsbConnected){
         emit doUsbDisconnect();
@@ -273,20 +278,31 @@ void DroneBackend::toggleComponentStatus(int index)
 
     QString value = componentValueToString(component.value);
     if(component.status == Status::OFF){
-        DataPacket startPacket{1,1,DataPacketType::START_SPECIFIC, value.toUtf8()};
-        emit doUsbWriteData(startPacket);
+        DataPacket packet{DataPacketType::START_SPECIFIC, value.toUtf8()};
+        sendPacket(packet);
     }else if(component.status == Status::ON){
-        DataPacket startPacket{1,1,DataPacketType::STOP_SPECIFIC, value.toUtf8()};
-        emit doUsbWriteData(startPacket);
+        DataPacket packet{DataPacketType::STOP_SPECIFIC, value.toUtf8()};
+        sendPacket(packet);
     }
 
     m_components.toggleStatus(index);
 }
 
+void DroneBackend::changeSettingsValue(int index, const QString &value)
+{
+    m_settingsListModel.setIsChangingByIndex(index, true);
+    SettingType settingType = m_settingsListModel.getSettingTypeByIndex(index);
+
+    if(settingType == SettingType::MAX_MOTOR_PERCENTAGE){
+        DataPacket packet{DataPacketType::CHANGE_SPEED, value.toUtf8()};
+        sendPacket(packet);
+    }
+}
+
 void DroneBackend::refreshComponentStatus()
 {
-    DataPacket startPacket{1,1,DataPacketType::STATUS,{}};
-    emit doUsbWriteData(startPacket);
+    DataPacket refreshPacket{DataPacketType::STATUS,{}};
+    sendPacket(refreshPacket);
 }
 
 void DroneBackend::setIsUsbAutoConnect(bool isUsbAutoConnect)
@@ -325,11 +341,13 @@ void DroneBackend::setMaxGamepadAxisPercentage(int maxGamepadAxisPercentage)
 void DroneBackend::onConnectionStatusChanged(const bool isConnected)
 {
     if(isConnected){
-        DataPacket startPacket{1,1,DataPacketType::START,{}};
-        emit doUsbWriteData(startPacket);
+        m_nextPacketId = 1;
 
-        DataPacket statusPacket{1,2,DataPacketType::STATUS,{}};
-        emit doUsbWriteData(statusPacket);
+        DataPacket startPacket{DataPacketType::START,{}};
+        sendPacket(startPacket);
+
+        DataPacket statusPacket{DataPacketType::STATUS,{}};
+        sendPacket(startPacket);
     }
 
     qDebug() << "DroneBackend: Connection status changed to " << isConnected;
@@ -386,6 +404,9 @@ void DroneBackend::onNewPacketReceived(const DataPacket &dataPacket)
         m_realTimeDataListModel.setValueByDataType(RealTimeDataPointType::LORA_CONNECTED, RealTimeDataPoint::valueFromBool(statusData.loraConnected));
         m_realTimeDataListModel.setValueByDataType(RealTimeDataPointType::UART_GPS_CONNECTED, RealTimeDataPoint::valueFromBool(statusData.uartGpsConnected));
         m_realTimeDataListModel.setValueByDataType(RealTimeDataPointType::UART_ZERO_CONNECTED, RealTimeDataPoint::valueFromBool(statusData.uartZeroConnected));
+
+        // Settings
+        m_settingsListModel.setValueBySettingType(SettingType::MAX_MOTOR_PERCENTAGE, QString::number(statusData.maxMotorSpeed));
 
         break;
     }
@@ -524,6 +545,19 @@ void DroneBackend::setDroneCoordinate(double latitude, double longitude, double 
     m_droneCoordinate.setAltitude(altitude);
 
     emit droneLocationChanged();
+}
+
+bool DroneBackend::sendPacket(DataPacket dataPacket)
+{
+    if(m_isUsbConnected){
+        dataPacket.m_header.packetId = m_nextPacketId;
+        dataPacket.m_header.droneId = m_droneId;
+        m_nextPacketId++;
+
+        emit doUsbWriteData(dataPacket);
+        return true;
+    }
+    return false;
 }
 
 QVariantMap DroneBackend::mapUsbDeviceInfo(const UsbInfo &portInfo)

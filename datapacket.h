@@ -33,7 +33,7 @@ struct StatusData {
     bool useGps = false;
     bool useLog = false;
     bool useMotorInformation = false;
-    bool maxMotorSpeed = false;
+    int maxMotorSpeed = 100;
 
     bool deserialize(const QByteArray& rawData) {
         QString str = QString::fromUtf8(rawData);
@@ -55,7 +55,7 @@ struct StatusData {
         useGps = (parts[10] == "1");
         useLog = (parts[11] == "1");
         useMotorInformation = (parts[12] == "1");
-        maxMotorSpeed = (parts[13] == "1");
+        maxMotorSpeed = parts[13].toInt();
 
         return true;
     }
@@ -80,6 +80,7 @@ public:
     DataPacket(const DataPacketHeader& hdr, const QByteArray& payload);
     DataPacket(uint8_t droneId, int packetId, DataPacketType type, const QByteArray& payload);
     DataPacket(const DataPacket& other);
+    DataPacket(DataPacketType type, const QByteArray& payload);
 
     QByteArray serialize() const;
 
